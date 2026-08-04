@@ -40,7 +40,7 @@ NFA/CFTC, and FINRA PDT framing, not confirmed.] If false, Section 1256 60/40 do
 apply, the IBKR contracting entity and product eligibility change, and the entire §8
 regulatory map is the wrong map and must be re-derived before going live.
 
-**Primary at current capital: MES. MNQ is the graduation, not the starting point.**
+**Primary at current capital: MES or M2K intraday. Swing is CLOSED in futures at $8k — run it in ETF shares. MNQ is a graduation, not a starting point.**
 
 *Revised 2026-08-04 by the adversarial audit, on arithmetic rather than preference.* The
 original answer to "ES vs NQ vs MNQ" was MNQ. That was wrong at $8k, and it was wrong
@@ -57,12 +57,61 @@ Run the arithmetic at $8k with a structure-based stop of roughly 0.25x the daily
 MES is the only one of the two whose single-contract structural stop lands inside a
 defensible risk band at this capital. MNQ is the graduation once equity supports it.
 
+**REVISED AGAIN 2026-08-04 by the horizon research, on ATR-based stops** *(arithmetic
+independently recomputed and confirmed)*. The table above used a hand-set "0.25x daily range"
+stop. Using measured ATR multiples, the picture is worse and MNQ fails **intraday too**:
+
+| Instrument | 0.25xATR intraday stop | % of $8k | 2xATR swing stop | % of $8k | Equity for 1% (intraday / swing) |
+|---|---|---|---|---|---|
+| MNQ | $217 | **2.72%** ✗ | $1,738 | **21.7%** ✗ | $21.7k / $173.8k |
+| MES | $107 | 1.33% ✓ | $854 | **10.7%** ✗ | $10.7k / $85.4k |
+| **M2K** | **$60** | **0.74%** ✓ | $476 | 5.95% ✗ | **$5.9k** / $47.6k |
+| MYM | $75 | 0.93% ✓ | $598 | 7.47% ✗ | $7.5k / $59.8k |
+
+**Three consequences.**
+
+1. **MNQ is outside the 0.5-2% band even intraday** (2.72% at a 0.25xATR stop, 5.43% at
+   0.5xATR). The earlier claim that MNQ needs "~$8-15k" was optimistic by roughly **3x for
+   intraday and 20x for swing** — the most load-bearing wrong number this file contained.
+2. **No micro futures contract can hold a multi-day swing position at $8k.** Even M2K's 2xATR
+   swing stop is 5.95%, triple the band ceiling. Swing is not "largely gated," it is **closed**.
+3. **M2K (Micro Russell 2000) has the best risk fit** at 0.74% intraday, and shares MNQ's
+   cheaper $0.50 tick. Caveat: thinner overnight liquidity makes its 1-tick slippage
+   assumption the least trustworthy of the three — **measure it, do not port it.**
+
+**The cost ceiling is a hard constraint on strategy shape.** At $2.90/round turn (MNQ/M2K:
+$1.90 fees + 1 tick/side), a 10%-of-equity annual cost ceiling permits **275 round turns per
+year ≈ 1.09 per trading day.** Not 3, not 5. This kills every multi-entry intraday shape
+before a line is written. MES is *worse* despite the deeper book, because its $1.25 tick makes
+a round turn $4.40 → only 181 RT/yr, 0.72/day, and 13.9% of equity at 252 RT.
+
+**Cost per calendar day is roughly EQUAL across horizons**, contradicting the usual framing:
+MNQ intraday at 1 RT/day = $2.90/day; MNQ swing held continuously = ~$0.01 transactions +
+$5.97/day carry = $5.98/day. Swing is not cheaper — the cost migrates to the financing line
+where it is easy to forget to model. And the textbook T-bill offset does not exist here:
+**IBKR pays zero interest on the first $10,000 of cash**, so a fully-collateralized futures
+long absorbs the full (r−q) drag with no credit.
+
+**Therefore the swing sleeve is not futures at all.** Run swing in **ETF shares** until equity
+clears ~$25-30k, because shares restore the sizing granularity that one indivisible micro
+contract destroys: 4 shares of QQQ at $723.85 with a 2xATR ($20.27/share) stop = $81 risk =
+**1.01% of $8k**, hitting the target within 25 basis points, where MNQ's only reachable
+non-zero size overshoots by 21x. Accept the tradeoffs explicitly: **Section 1256 60/40 does
+NOT apply to ETF shares** (ordinary capital-gains treatment — the main thing given up),
+**PDT applies to ETF day trades** so that sleeve must be structurally swing-only, and ETFs
+have a real close-to-open gap where futures largely do not, which makes the gap-aware sizer
+matter more rather than less.
+
 | Contract | $/point | Tick | $/tick | Notional (approx) | Typical daily range | Sane capital for 1 contract @1-2% risk |
 |---|---|---|---|---|---|---|
 | ES  | $50 | 0.25 | $12.50 | ~$300k | ~50-80 pt = $2.5-4k | ~$50-100k+ |
 | NQ  | $20 | 0.25 | $5.00  | ~$420k | ~200-400 pt = $4-8k | ~$75-150k |
-| MNQ | $2  | 0.25 | $0.50  | ~$42k  | ~$400-800           | ~$8-15k (min ~$5k) |
-| MES | $5  | 0.25 | $1.25  | ~$30k  | ~$250-400           | ~$5-10k (min ~$2-3k) |
+| MNQ | $2  | 0.25 | $0.50  | ~$42k  | ~$400-800           | ~$22k intraday / ~$174k swing |
+| MES | $5  | 0.25 | $1.25  | ~$30k  | ~$250-400           | ~$11k intraday / ~$85k swing |
+| M2K | $5  | 0.10 | $0.50  | ~$12k  | ~$240               | ~$6k intraday / ~$48k swing |
+
+*The last column was corrected 2026-08-04 — it previously read "~$8-15k" for MNQ and
+"~$5-10k" for MES, which understated the intraday requirement ~3x and omitted swing entirely.*
 
 Reasoning:
 
@@ -71,17 +120,20 @@ Reasoning:
   data pipeline, and execution logic lift-and-shift to ES/NQ unchanged when the equity
   curve earns it, while every bug and drawdown during iteration costs 1/10 as much.
 - **What "position-sizing granularity" actually means below $25k.** Not scaling lots —
-  at this capital there is exactly one available position size, so fixed-fractional
-  sizing is not expressible. It means *choosing an instrument whose one-lot structural
-  stop lands inside the risk band.* MES does at ~1%; MNQ needs ~2%. ES/NQ are far outside
-  any defensible band.
+  in futures at this capital there is exactly one available position size, so
+  fixed-fractional sizing is not expressible. It means *choosing an instrument whose
+  one-lot structural stop lands inside the risk band.* M2K does at 0.74% intraday, MES at
+  1.33%; MNQ does not (2.72%). ES/NQ are far outside any defensible band. **ETF shares are
+  the exception that proves the point** — 1-share increments hit a 1% target within 25 bp,
+  which is why the swing sleeve lives there until ~$25-30k.
 - MNQ's appeal is that Nasdaq moves roughly 2x the S&P in dollar terms, so momentum and
   breakout logic has more signal to trade. That is a reason to graduate to it, not a
   reason to start there.
 
-**Ladder:** MES (primary now) → MNQ (on graduation) → *ES/NQ is aspirational only.* The
-ES/NQ rung projects a capital trajectory this plan concedes elsewhere is unlikely; do not
-treat it as planned work.
+**Ladder, by sleeve.** Intraday futures: **M2K or MES now** → MNQ at ~$22k → *ES/NQ
+aspirational only* (that rung projects a capital trajectory this plan concedes elsewhere is
+unlikely; do not treat it as planned work). Swing: **ETF shares now** → M2K/MES futures at
+~$25-30k, which is a config change under the horizon abstraction, not a rewrite.
 
 **Never size off day-trade margin.** Brokers will let you hold MNQ on ~$50-200 of
 intraday margin. That is a leverage permission, not a survival threshold. One normal
