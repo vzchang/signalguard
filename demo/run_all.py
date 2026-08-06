@@ -17,6 +17,7 @@ DEMOS = [
     "lookahead_detector_demo.py",
     "walk_forward_demo.py",
     "gate_demo.py",
+    "real_data_gate.py",
 ]
 TESTS = [
     "test_deflated_sharpe.py",
@@ -24,6 +25,7 @@ TESTS = [
     "test_lookahead_detector.py",
     "test_walk_forward.py",
     "test_gate.py",
+    "test_real_data_gate.py",
 ]
 PLOTS = [
     "plot_noise_distribution.py",

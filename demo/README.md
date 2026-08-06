@@ -115,6 +115,31 @@ walk-forward efficiency   : +0.18
 
 ---
 
+## On real data — 155 years of S&P 500
+
+The synthetic demos prove the checks work against a known answer. `real_data_gate.py` runs
+the gate on **cached monthly S&P 500 closes back to 1871** (`data/sp500.csv`, a freely
+redistributable public dataset) and shows it behaving sensibly on real prices:
+
+```
+STRATEGY A  buy-and-hold, full 155y (a priori)
+  [PASS] deflated_sharpe   PSR 1.00 (N=1: no selection to deflate)
+  [PASS] walk_forward      WFE 0.76  (IS +2.15 -> OOS +1.64)
+  VERDICT: ACCEPT
+
+STRATEGY B  best of 153 MA combos on a SHORT 72-month window (overfit trap)
+  winner annualized Sharpe +2.02  <- looks great
+  [FAIL] deflated_sharpe   DSR 0.91 < 0.95  (indistinguishable from 153-trial noise)
+  [FAIL] walk_forward      WFE 0.21  (IS +9.86 -> OOS +2.11, edge did not survive)
+  VERDICT: REJECT
+```
+
+The lesson is sharper than "reject everything": the real equity premium (buy-and-hold,
+chosen a priori) **passes**, while a big parameter search on a small sample **fails** — its
+2.0 Sharpe is a small-sample artifact. Overfitting is trials-vs-sample-size, and the gate
+feels it on real prices. The same MA search over the *full* 155 years is not flagged; 155
+years is enough data to survive the deflation. (`real_data_gate.py`, `test_real_data_gate.py`.)
+
 ## Why these are the pieces worth showing
 
 Together they are the four ways a backtest lies — selection across trials, leakage across

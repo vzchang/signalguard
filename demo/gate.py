@@ -78,6 +78,15 @@ def check_deflated_sharpe(returns, n_trials, var_trial_sharpes, cut=0.95) -> Che
     if n_trials is None or var_trial_sharpes is None:
         return CheckResult("deflated_sharpe", Status.SKIP,
                            "no trial count supplied; cannot correct for selection")
+    if n_trials < 2:
+        # a single a-priori strategy: there is no selection to deflate, so the honest test
+        # is the plain PSR vs zero (the expected-max benchmark is undefined for N=1).
+        from deflated_sharpe_demo import probabilistic_sharpe_ratio
+        psr = probabilistic_sharpe_ratio(np.asarray(returns), 0.0)
+        status = Status.PASS if psr >= cut else Status.FAIL
+        return CheckResult("deflated_sharpe", status,
+                           f"PSR {psr:.2f} (N=1, a priori: no selection to deflate) "
+                           f"{'>=' if status is Status.PASS else '<'} {cut}")
     dsr = deflated_sharpe_ratio(np.asarray(returns), n_trials, var_trial_sharpes)
     if dsr >= cut:
         return CheckResult("deflated_sharpe", Status.PASS,
