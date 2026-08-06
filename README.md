@@ -14,6 +14,7 @@ designed so the trading core can later become a product.
 
 | File | What it is |
 |---|---|
+| [`docs/NEXT-STEPS.md`](docs/NEXT-STEPS.md) | **Start here.** Ordered next actions: complete repo hygiene, then Phase 0. |
 | [`CLAUDE.md`](CLAUDE.md) | **Standing rules.** Prime directives, instrument decision, architecture, data, broker, strategy policy, risk. The constitution — rarely changes. |
 | [`PLAN.md`](PLAN.md) | **The ordered sequence.** Phases 0–5 with gates, effort budgets, and explicit skip lists. Changes as decisions land. |
 | [`DECISIONS.md`](DECISIONS.md) | **Append-only decision log.** Records what was decided, what was rejected, and `[verified]` vs `[inference]`. |
@@ -67,6 +68,6 @@ strategy not working.
 ## Restoring from a bundle
 
 ```bash
-git clone quantdesk-FINAL-YYYYMMDD.bundle quantdesk
+git clone quantdesk-FINAL.bundle quantdesk
 cd quantdesk && git log --oneline
 ```
