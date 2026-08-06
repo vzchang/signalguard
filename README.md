@@ -1,14 +1,39 @@
 # QuantDesk
 
-Planning and research for an automated trading system on CME micro equity-index futures,
-designed so the trading core can later become a product.
+An automated-trading system for CME micro equity-index futures, built around one thesis:
 
-**Status: planning complete, zero application code written.** Everything here is documents.
+> **The first deliverable is not a profitable strategy. It is a harness that can honestly
+> reject one.**
 
-> **This repo is PRIVATE and not ready to publish.** All commits are currently authored
+Most retail trading projects show a single flattering equity curve. This one leads with the
+opposite instinct — the machinery that *kills* a strategy that only looks good — because
+that is the part that separates someone who has understood backtest overfitting from someone
+who has not.
+
+## See it in 60 seconds — runnable demos
+
+Four self-contained demonstrations of that machinery. numpy for the logic, matplotlib for the
+charts, deterministic, no market data or broker needed. `cd demo && python3 <file>`.
+
+| Demo | Shows | Chart |
+|---|---|---|
+| [`deflated_sharpe_demo.py`](demo/) | Best-of-200 pure noise "finds" a 1.9 Sharpe; the **Deflated Sharpe Ratio** rejects it, and still passes a real edge | `noise_sharpe_distribution.png` |
+| [`purged_cv_demo.py`](demo/) | Shuffled k-fold leaks (0.60 accuracy); **purge + embargo** collapses it to the honest 0.50 | `purged_cv_leak.png` |
+| [`lookahead_detector_demo.py`](demo/) | A same-bar-fill **lookahead peek** prints a +20 Sharpe from zero edge; two detectors catch it | `lookahead_equity.png` |
+| [`walk_forward_demo.py`](demo/) | In-sample edge (+0.87) evaporates out-of-sample (+0.16); **walk-forward efficiency 0.18** | `walk_forward_efficiency.png` |
+
+Each has a test file (`test_*.py`, plain-assert, run directly) with a headline test that
+encodes the point. See [`demo/README.md`](demo/README.md).
+
+## The plan behind the demos
+
+The demos are runnable slices of Phase 1 of a fully specified build. Status: **planning and
+research complete, the harness specified to the file level, zero production code written.**
+
+> **This repo is PRIVATE and not ready to publish.** All commits are authored
 > `vzc7636@gmail.com`. Complete
 > [`docs/AUTHORSHIP-TODO.md`](docs/AUTHORSHIP-TODO.md) before any public push — publication
-> is a one-way door and history rewrites do not un-fork a published repo.
+> is a one-way door and a history rewrite does not un-fork a published repo.
 
 ## Read in this order
 
