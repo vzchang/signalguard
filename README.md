@@ -12,8 +12,20 @@ who has not.
 
 ## See it in 60 seconds — runnable demos
 
-Four self-contained demonstrations of that machinery. numpy for the logic, matplotlib for the
-charts, deterministic, no market data or broker needed. `cd demo && python3 <file>`.
+```bash
+pip install -r requirements.txt
+cd demo && python3 gate_demo.py     # the validation gate: ACCEPT/REJECT with a reason per check
+python3 run_all.py                  # or: every demo + all 23 tests + every chart, one command
+```
+
+The four checks below compose into a single **validation gate** (`demo/gate.py`) that takes a
+strategy and returns ACCEPT or REJECT with a reason per check — the thesis as a working tool,
+not four separate examples. It rejects an overfitting artifact (4/4 checks fail) and accepts a
+clean one, and it never returns a silent pass: a missing input is SKIP, an undefined score is
+FAIL.
+
+Each check is also its own self-contained demo. numpy for the logic, matplotlib for the
+charts, deterministic, no market data or broker needed.
 
 | Demo | Shows | Chart |
 |---|---|---|

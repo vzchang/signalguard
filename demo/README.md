@@ -10,12 +10,38 @@ Each demo has a `test_*.py` (plain asserts, run directly) whose headline test en
 
 ```bash
 cd demo
+python3 run_all.py                 # every demo + every test + every chart; exits nonzero on any failure
+```
+
+or individually:
+
+```bash
+python3 gate_demo.py               && python3 test_gate.py          # the unified gate (see below)
 python3 deflated_sharpe_demo.py    && python3 test_deflated_sharpe.py
 python3 purged_cv_demo.py          && python3 test_purged_cv.py
 python3 lookahead_detector_demo.py && python3 test_lookahead_detector.py
 python3 walk_forward_demo.py       && python3 test_walk_forward.py
 python3 plot_*.py                  # regenerate the four charts
 ```
+
+## The gate — all four checks, one verdict
+
+The four checks are not just concepts; they compose into a single `evaluate(...)` that
+returns ACCEPT or REJECT with a reason per check. This is the thesis as a tool.
+
+```
+QuantDesk validation gate
+  [FAIL] deflated_sharpe   DSR 0.44 < 0.95  (edge indistinguishable from 200-trial noise)
+  [FAIL] lookahead_audit   same-bar/next-bar gap +20.88  (books the bar it traded on)
+  [FAIL] purged_cv         purged 0.50 at baseline, leak +0.10  (score was leakage)
+  [FAIL] walk_forward      WFE -0.14 < 0.5  (IS +0.91 -> OOS -0.13, edge did not survive)
+  VERDICT: REJECT (4/4 checks failed)
+```
+
+`gate_demo.py` runs it on an overfitting artifact (REJECT, above) and a clean strategy
+(ACCEPT). Design rule enforced by `test_gate.py`: **ACCEPT requires at least one check to
+have run and none to have failed; a missing input is SKIP and an undefined (nan) score is
+FAIL — never a silent PASS.** (`gate.py`, `test_gate.py`.)
 
 ---
 

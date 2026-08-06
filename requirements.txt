@@ -1,0 +1,4 @@
+# Runtime for the demo suite (demo/). Core logic + tests need only numpy;
+# matplotlib is used solely to regenerate the charts.
+numpy>=1.21
+matplotlib>=3.5

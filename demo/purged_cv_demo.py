@@ -108,7 +108,7 @@ def run_cv(x, y, folds, purge: bool, label_horizon: int, embargo: int, n: int) -
             continue
         accs.append(score_fold(x[ff.train_idx], y[ff.train_idx],
                                x[ff.test_idx], y[ff.test_idx]))
-    return float(np.mean(accs))
+    return float(np.mean(accs)) if accs else float("nan")  # nan iff every fold was empty
 
 
 def main() -> None:
