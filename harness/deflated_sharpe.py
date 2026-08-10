@@ -18,7 +18,7 @@ genuinely-edged strategy -- i.e. it is a discriminator, not a blanket "no".
 
 No market data, no dependencies beyond numpy. Deterministic (seeded).
 
-Run:  python3 deflated_sharpe_demo.py
+Run:  python3 deflated_sharpe.py
 """
 from __future__ import annotations
 
@@ -122,19 +122,21 @@ def deflated_sharpe_ratio(returns: np.ndarray, n_trials: int,
     return probabilistic_sharpe_ratio(returns, sr_benchmark=sr0)
 
 
-def best_of_n_noise(n_trials: int, n_obs: int, rng: np.random.Generator):
+def best_of_n_noise(n_trials: int, n_obs: int,
+                    rng: np.random.Generator) -> tuple[np.ndarray, float, float]:
     """
     Run n_trials strategies on PURE NOISE (mean-zero returns), return the one with the
     highest Sharpe plus the variance of all trial Sharpes. Selection bias in a bottle.
     """
-    sharpes, series = [], []
+    sharpes: list[float] = []
+    series: list[np.ndarray] = []
     for _ in range(n_trials):
         r = rng.normal(0.0, 0.01, n_obs)  # 1% daily vol, ZERO true edge
         sharpes.append(sharpe_ratio(r))
         series.append(r)
-    sharpes = np.array(sharpes)
-    best = int(sharpes.argmax())
-    return series[best], float(sharpes[best]), float(sharpes.var(ddof=1))
+    sharpe_arr = np.array(sharpes)
+    best = int(sharpe_arr.argmax())
+    return series[best], float(sharpe_arr[best]), float(sharpe_arr.var(ddof=1))
 
 
 def genuine_edge(n_obs: int, daily_sharpe: float, rng: np.random.Generator) -> np.ndarray:

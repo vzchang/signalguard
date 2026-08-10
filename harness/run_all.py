@@ -13,10 +13,10 @@ from pathlib import Path
 HERE = Path(__file__).parent
 
 DEMOS = [
-    "deflated_sharpe_demo.py",
-    "purged_cv_demo.py",
-    "lookahead_detector_demo.py",
-    "walk_forward_demo.py",
+    "deflated_sharpe.py",
+    "purged_cv.py",
+    "lookahead_detector.py",
+    "walk_forward.py",
     "gate_demo.py",
     "real_data_gate.py",
 ]

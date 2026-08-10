@@ -15,7 +15,7 @@ Two independent detectors here, because no single one catches every class:
   2. Fill-timing audit -- compare same-bar-close fills vs next-bar-open fills on identical
      signals; a large, systematically favorable gap is the signature of the peek.
 
-Deterministic, numpy-only. Run:  python3 lookahead_detector_demo.py
+Deterministic, numpy-only. Run:  python3 lookahead_detector.py
 """
 from __future__ import annotations
 
@@ -68,14 +68,15 @@ def pnl_same_bar(r: np.ndarray) -> np.ndarray:
     return sig * r                 # == |r|, always non-negative
 
 
-def fill_timing_audit(r: np.ndarray):
+def fill_timing_audit(r: np.ndarray) -> tuple[float, float, float]:
     """Detector A. Return (cheat_sr, honest_sr, gap). A huge favorable gap flags the peek."""
     cheat = sharpe(pnl_same_bar(r))
     honest = sharpe(pnl_next_bar(r))
     return cheat, honest, cheat - honest
 
 
-def shuffle_test(r: np.ndarray, use_cheat: bool, rng: np.random.Generator, n_shuffle: int = 300):
+def shuffle_test(r: np.ndarray, use_cheat: bool, rng: np.random.Generator,
+                 n_shuffle: int = 300) -> tuple[float, float, float]:
     """
     Detector B. Destroy the time-alignment between signal and the return it books, by
     shuffling. A genuine edge survives above the shuffled null; a same-bar LEAK also survives

@@ -7,10 +7,10 @@ in-sample Sharpe that does NOT survive out-of-sample -- walk-forward efficiency 
 from __future__ import annotations
 
 import numpy as np
-from walk_forward_demo import best_lookback, make_returns, strategy_returns, walk_forward
+from walk_forward import best_lookback, make_returns, strategy_returns, walk_forward
 
 
-def test_no_lookahead_in_strategy():
+def test_no_lookahead_in_strategy() -> None:
     """strategy_returns must never use a bar's own or future return for its position."""
     r = make_returns(200, np.random.default_rng(0))
     # zero out the tail; positions for the early bars must be unchanged
@@ -21,13 +21,13 @@ def test_no_lookahead_in_strategy():
     assert np.allclose(a, b), "early positions must not depend on future returns"
 
 
-def test_optimizer_finds_positive_is_on_noise():
+def test_optimizer_finds_positive_is_on_noise() -> None:
     r = make_returns(1000, np.random.default_rng(1))
     _, is_sr = best_lookback(r, list(range(2, 61)))
     assert is_sr > 0.3, f"searching 59 lookbacks should find spurious IS edge, got {is_sr:.2f}"
 
 
-def test_THE_GATE_oos_collapses_below_is():
+def test_THE_GATE_oos_collapses_below_is() -> None:
     """mean OOS Sharpe materially below mean IS Sharpe -> WFE well under 1 on pure noise."""
     r = make_returns(3000, np.random.default_rng(20260806))
     rows = walk_forward(r, n_splits=8, grid=list(range(2, 61)))
@@ -39,7 +39,7 @@ def test_THE_GATE_oos_collapses_below_is():
     assert oos_m < is_m, "OOS must not exceed IS on a zero-edge series"
 
 
-def _run_all():
+def _run_all() -> None:
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in fns:
         fn()

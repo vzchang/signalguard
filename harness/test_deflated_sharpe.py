@@ -9,7 +9,7 @@ comparison is what proves the gate discriminates rather than blanket-rejecting.
 from __future__ import annotations
 
 import numpy as np
-from deflated_sharpe_demo import (
+from deflated_sharpe import (
     _norm_cdf,
     _norm_ppf,
     best_of_n_noise,
@@ -22,28 +22,28 @@ from deflated_sharpe_demo import (
 CUT = 0.95
 
 
-def test_norm_ppf_cdf_roundtrip():
+def test_norm_ppf_cdf_roundtrip() -> None:
     for p in (0.01, 0.1, 0.5, 0.9, 0.975, 0.999):
         assert abs(_norm_cdf(_norm_ppf(p)) - p) < 1e-6, p
 
 
-def test_norm_ppf_known_quantiles():
+def test_norm_ppf_known_quantiles() -> None:
     assert abs(_norm_ppf(0.975) - 1.959963985) < 1e-5
     assert abs(_norm_ppf(0.5)) < 1e-9
 
 
-def test_sharpe_zero_on_flat_series():
+def test_sharpe_zero_on_flat_series() -> None:
     assert sharpe_ratio(np.zeros(100)) == 0.0
 
 
-def test_psr_rises_with_sharpe():
+def test_psr_rises_with_sharpe() -> None:
     rng = np.random.default_rng(1)
     weak = rng.normal(0.0002, 0.01, 500)
     strong = rng.normal(0.004, 0.01, 500)
     assert probabilistic_sharpe_ratio(strong) > probabilistic_sharpe_ratio(weak)
 
 
-def test_dsr_is_never_greater_than_psr():
+def test_dsr_is_never_greater_than_psr() -> None:
     """DSR benchmarks against a positive expected-max SR, so it can only be <= PSR-vs-0."""
     rng = np.random.default_rng(2)
     r = rng.normal(0.001, 0.01, 500)
@@ -51,7 +51,7 @@ def test_dsr_is_never_greater_than_psr():
     assert deflated_sharpe_ratio(r, 50, var_sr) <= probabilistic_sharpe_ratio(r, 0.0) + 1e-9
 
 
-def test_THE_GATE_rejects_noise_accepts_edge():
+def test_THE_GATE_rejects_noise_accepts_edge() -> None:
     """
     The headline test. Same 200-trial selection context for both:
       - best-of-200 pure noise  -> DSR must REJECT (< CUT)
@@ -73,7 +73,7 @@ def test_THE_GATE_rejects_noise_accepts_edge():
     assert dsr_edge >= CUT, f"DSR must ACCEPT the real edge, got {dsr_edge:.3f}"
 
 
-def _run_all():
+def _run_all() -> None:
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     passed = 0
     for fn in fns:

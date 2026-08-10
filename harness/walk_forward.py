@@ -10,11 +10,12 @@ This demo runs walk-forward on an OVERFIT-PRONE strategy (many parameters search
 real signal) and shows the OOS Sharpe collapsing far below the IS Sharpe across windows --
 the visual signature of overfitting. Deterministic, numpy-only.
 
-Run:  python3 walk_forward_demo.py
+Run:  python3 walk_forward.py
 """
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 
 import numpy as np
 
@@ -43,7 +44,7 @@ def strategy_returns(r: np.ndarray, lookback: int) -> np.ndarray:
     return pos[:-1] * r[1:]
 
 
-def best_lookback(r: np.ndarray, grid) -> tuple[int, float]:
+def best_lookback(r: np.ndarray, grid: Sequence[int]) -> tuple[int, float]:
     best_lb, best_sr = grid[0], -1e9
     for lb in grid:
         sr = sharpe(strategy_returns(r, lb))
@@ -52,7 +53,8 @@ def best_lookback(r: np.ndarray, grid) -> tuple[int, float]:
     return best_lb, best_sr
 
 
-def walk_forward(r: np.ndarray, n_splits: int, grid):
+def walk_forward(r: np.ndarray, n_splits: int,
+                 grid: Sequence[int]) -> list[tuple[int, float, float]]:
     """
     Anchored-rolling walk-forward. Each split: optimize lookback on the train window, apply
     it frozen to the immediately following test window. Return per-split (is_sr, oos_sr).

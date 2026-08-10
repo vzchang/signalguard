@@ -10,14 +10,14 @@ Run:  python3 gate_demo.py
 from __future__ import annotations
 
 import numpy as np
-from deflated_sharpe_demo import best_of_n_noise
-from gate import evaluate
-from lookahead_detector_demo import make_returns
-from purged_cv_demo import kfold_indices, make_leaky_dataset, run_cv
-from walk_forward_demo import make_returns as wf_make_returns
+from deflated_sharpe import best_of_n_noise
+from gate import Verdict, evaluate
+from lookahead_detector import make_returns
+from purged_cv import kfold_indices, make_leaky_dataset, run_cv
+from walk_forward import make_returns as wf_make_returns
 
 
-def scenario_overfit_artifact():
+def scenario_overfit_artifact() -> Verdict:
     """
     A strategy assembled from every red flag: selected as best-of-200 noise, audited on a
     random walk where a same-bar peek inflates it, cross-validated with shuffled folds that
@@ -45,7 +45,7 @@ def scenario_overfit_artifact():
     )
 
 
-def scenario_clean_strategy():
+def scenario_clean_strategy() -> Verdict:
     """
     A strategy that passes what it can: a return stream with a genuine, modest edge judged
     against a SMALL honest trial count, no lookahead (a real forward-return series), no CV

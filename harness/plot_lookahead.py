@@ -16,7 +16,7 @@ import numpy as np
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from lookahead_detector_demo import make_returns, pnl_next_bar, pnl_same_bar
+from lookahead_detector import make_returns, pnl_next_bar, pnl_same_bar
 
 INK, MUTED, GRID, SURFACE = "#1f2933", "#7b8794", "#e4e7eb", "#ffffff"
 CHEAT = "#c0392b"    # red: the impossible curve

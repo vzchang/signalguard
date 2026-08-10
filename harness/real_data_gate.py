@@ -27,10 +27,11 @@ from __future__ import annotations
 
 import csv
 import math
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
-from deflated_sharpe_demo import sharpe_ratio
+from deflated_sharpe import sharpe_ratio
 from gate import evaluate
 
 DATA = Path(__file__).parent / "data" / "sp500.csv"
@@ -44,10 +45,13 @@ def load_sp500_returns() -> np.ndarray:
     return np.diff(px) / px[:-1]  # monthly simple returns
 
 
-def ma_crossover_search(r: np.ndarray, fasts, slows):
+def ma_crossover_search(r: np.ndarray, fasts: Sequence[int],
+                        slows: Sequence[int]) -> tuple[np.ndarray, int, float]:
     """Search fast/slow MA crossover combos on r; return (best_returns, n_trials, var_sharpes)."""
     price = np.cumprod(1 + r) * 100
-    sharpes, best, best_sr = [], None, -1e9
+    sharpes: list[float] = []
+    best: np.ndarray | None = None
+    best_sr = -1e9
     for f in fasts:
         for s in slows:
             if f >= s:
@@ -63,6 +67,13 @@ def ma_crossover_search(r: np.ndarray, fasts, slows):
             sharpes.append(sr)
             if sr > best_sr:
                 best_sr, best = sr, strat
+    if best is None:
+        # No (fast, slow) pair produced a usable series. Returning None here would hand the
+        # caller a silent failure, which is the exact defect this project exists to catch.
+        raise ValueError(
+            f"no valid fast/slow pair in fasts={list(fasts)}, slows={list(slows)} "
+            f"for a series of length {len(r)}"
+        )
     return best, len(sharpes), float(np.var(sharpes, ddof=1))
 
 

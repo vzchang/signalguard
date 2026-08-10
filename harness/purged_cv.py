@@ -21,7 +21,7 @@ is mildly autocorrelated with its own label horizon -- and shows plain K-Fold re
 falsely high score that purged K-Fold corrects downward toward the honest (near-random)
 truth. No market data, numpy-only, deterministic.
 
-Run:  python3 purged_cv_demo.py
+Run:  python3 purged_cv.py
 """
 from __future__ import annotations
 
@@ -70,7 +70,8 @@ def purge_and_embargo(fold: Fold, label_horizon: int, embargo: int, n: int) -> F
     return Fold(keep, test)
 
 
-def make_leaky_dataset(n: int, label_horizon: int, rng: np.random.Generator):
+def make_leaky_dataset(n: int, label_horizon: int,
+                       rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
     """
     Feature x is pure noise. Label y is the sign of a FORWARD-looking sum over the next
     `label_horizon` bars of a series that x is only weakly tied to -- so the TRUE
@@ -88,7 +89,8 @@ def make_leaky_dataset(n: int, label_horizon: int, rng: np.random.Generator):
     return x.reshape(-1, 1), y
 
 
-def score_fold(x_tr, y_tr, x_te, y_te) -> float:
+def score_fold(x_tr: np.ndarray, y_tr: np.ndarray,
+               x_te: np.ndarray, y_te: np.ndarray) -> float:
     """
     A memorizing-prone 1-NN in index-adjacent feature space. Accuracy on the test fold.
     1-NN is deliberately chosen: it is exactly the model that benefits from a neighbor
@@ -102,7 +104,8 @@ def score_fold(x_tr, y_tr, x_te, y_te) -> float:
     return float((np.array(preds) == y_te).mean())
 
 
-def run_cv(x, y, folds, purge: bool, label_horizon: int, embargo: int, n: int) -> float:
+def run_cv(x: np.ndarray, y: np.ndarray, folds: list[Fold], purge: bool,
+           label_horizon: int, embargo: int, n: int) -> float:
     accs = []
     for f in folds:
         ff = purge_and_embargo(f, label_horizon, embargo, n) if purge else f

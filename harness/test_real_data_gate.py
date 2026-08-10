@@ -13,21 +13,21 @@ from gate import Status, evaluate
 from real_data_gate import DATA, load_sp500_returns, ma_crossover_search
 
 
-def test_data_file_present_and_sane():
+def test_data_file_present_and_sane() -> None:
     assert DATA.exists(), "demo/data/sp500.csv must be committed for offline runs"
     r = load_sp500_returns()
     assert len(r) > 1500, f"expected 150+ years of monthly data, got {len(r)}"
     assert 0.05 < r.std(ddof=1) * math.sqrt(12) < 0.30, "annualized vol should be equity-like"
 
 
-def test_buy_and_hold_full_sample_accepted():
+def test_buy_and_hold_full_sample_accepted() -> None:
     r = load_sp500_returns()
     v = evaluate(returns=r, n_trials=1, var_trial_sharpes=1e-6,
                  wf_series=r, wf_splits=8, wf_grid=list(range(2, 25)))
     assert v.accepted, "buy-and-hold over 155y should PASS (real equity premium, a priori)"
 
 
-def test_short_window_search_rejected():
+def test_short_window_search_rejected() -> None:
     r = load_sp500_returns()
     short = r[-72:]
     best, n_trials, var_sr = ma_crossover_search(short, list(range(2, 13)), list(range(6, 49, 3)))
@@ -38,7 +38,7 @@ def test_short_window_search_rejected():
     assert "walk_forward" in names, "walk-forward should flag the OOS collapse"
 
 
-def test_n1_deflated_sharpe_does_not_crash():
+def test_n1_deflated_sharpe_does_not_crash() -> None:
     """Regression: DSR with n_trials=1 must not raise (expected-max benchmark is undefined)."""
     from gate import check_deflated_sharpe
     r = load_sp500_returns()
@@ -46,7 +46,7 @@ def test_n1_deflated_sharpe_does_not_crash():
     assert res.status in (Status.PASS, Status.FAIL), "N=1 must resolve to a real verdict, not crash"
 
 
-def _run_all():
+def _run_all() -> None:
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in fns:
         fn()

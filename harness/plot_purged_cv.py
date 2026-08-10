@@ -15,7 +15,7 @@ import numpy as np
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from purged_cv_demo import kfold_indices, make_leaky_dataset, run_cv
+from purged_cv import kfold_indices, make_leaky_dataset, run_cv
 
 INK, MUTED, GRID, SURFACE = "#1f2933", "#7b8794", "#e4e7eb", "#ffffff"
 HONEST = "#3b82c4"   # the one data hue: legitimate scores

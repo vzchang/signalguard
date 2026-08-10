@@ -8,7 +8,7 @@ leak. That single comparison is the point of the module.
 from __future__ import annotations
 
 import numpy as np
-from purged_cv_demo import (
+from purged_cv import (
     kfold_indices,
     make_leaky_dataset,
     purge_and_embargo,
@@ -16,7 +16,7 @@ from purged_cv_demo import (
 )
 
 
-def test_folds_partition_the_data():
+def test_folds_partition_the_data() -> None:
     for shuffle in (False, True):
         folds = kfold_indices(300, 5, shuffle=shuffle, rng=np.random.default_rng(0))
         seen = np.concatenate([f.test_idx for f in folds])
@@ -25,7 +25,7 @@ def test_folds_partition_the_data():
             assert np.intersect1d(f.train_idx, f.test_idx).size == 0, "train/test must be disjoint"
 
 
-def test_purge_removes_neighbors_of_test():
+def test_purge_removes_neighbors_of_test() -> None:
     folds = kfold_indices(300, 5, shuffle=True, rng=np.random.default_rng(1))
     h, emb = 20, 5
     for f in folds:
@@ -37,7 +37,7 @@ def test_purge_removes_neighbors_of_test():
         assert pf.train_idx.size <= f.train_idx.size, "purge can only shrink train"
 
 
-def test_THE_LEAK_plain_inflates_purged_corrects():
+def test_THE_LEAK_plain_inflates_purged_corrects() -> None:
     """
     plain shuffled K-Fold > baseline + margin  (it leaks)
     purged shuffled K-Fold ~ baseline          (leak removed)
@@ -57,7 +57,7 @@ def test_THE_LEAK_plain_inflates_purged_corrects():
     assert plain > base + 0.005, f"plain should look skillful, got {plain:.3f} vs {base:.3f}"
 
 
-def _run_all():
+def _run_all() -> None:
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in fns:
         fn()

@@ -29,7 +29,7 @@ sample?" and answers 0.996 — accept. But PSR never asked how many strategies y
 winner scores 0.436 — rejected. Crucially, when I feed DSR a genuinely-edged strategy in the
 same 200-trial context, it passes it (0.993). It discriminates; it does not blanket-reject.
 
-*(`demo/deflated_sharpe_demo.py`. The winner sits at the 99.5th percentile of the noise pile —
+*(`harness/deflated_sharpe.py`. The winner sits at the 99.5th percentile of the noise pile —
 see `noise_sharpe_distribution.png`.)*
 
 ## 2. Leakage: shuffled cross-validation reads tomorrow's answer
@@ -42,7 +42,7 @@ against a 0.586 no-skill baseline — "skill." Apply **purging** (drop training 
 label window overlaps a test sample) plus an **embargo**, and it collapses to 0.504 — a coin
 flip, which is the truth. The 0.096 gap was pure leakage.
 
-*(`demo/purged_cv_demo.py`.)*
+*(`harness/purged_cv.py`.)*
 
 ## 3. Lookahead: booking the bar you traded on
 
@@ -55,7 +55,7 @@ has no edge on a random walk, which is correct. Two detectors flag the cheat —
 audit (the +20-point gap is the signature) and a shuffle test. The equity curves say it best:
 same signal, one grows \$1 into \$125,000, the other wanders around \$1.
 
-*(`demo/lookahead_detector_demo.py`, `lookahead_equity.png`.)*
+*(`harness/lookahead_detector.py`, `lookahead_equity.png`.)*
 
 ## 4. Overfitting: in-sample edge that does not survive
 
@@ -65,7 +65,7 @@ trades it on the next, unseen window. Across 8 splits, mean in-sample Sharpe was
 out-of-sample Sharpe was +0.16. Walk-Forward Efficiency (OOS/IS) of **0.18** — most of the
 apparent edge was the optimizer fitting the past, and it evaporated.
 
-*(`demo/walk_forward_demo.py`, `walk_forward_efficiency.png`.)*
+*(`harness/walk_forward.py`, `walk_forward_efficiency.png`.)*
 
 ## What ties them together
 
@@ -88,4 +88,4 @@ multi-thousand-dollar drawdown; profitability here is proof-of-concept, not inco
 engineering and the falsification discipline are the durable assets, and they are what these
 demos show.
 
-*Code: `demo/`. The full plan: `PLAN.md`, `CLAUDE.md`, and the decision log in `DECISIONS.md`.*
+*Code: `harness/`. The full plan: `PLAN.md`, `CLAUDE.md`, and the decision log in `DECISIONS.md`.*

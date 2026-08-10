@@ -17,10 +17,10 @@ or individually:
 
 ```bash
 python3 gate_demo.py               && python3 test_gate.py          # the unified gate (see below)
-python3 deflated_sharpe_demo.py    && python3 test_deflated_sharpe.py
-python3 purged_cv_demo.py          && python3 test_purged_cv.py
-python3 lookahead_detector_demo.py && python3 test_lookahead_detector.py
-python3 walk_forward_demo.py       && python3 test_walk_forward.py
+python3 deflated_sharpe.py    && python3 test_deflated_sharpe.py
+python3 purged_cv.py          && python3 test_purged_cv.py
+python3 lookahead_detector.py && python3 test_lookahead_detector.py
+python3 walk_forward.py       && python3 test_walk_forward.py
 python3 plot_*.py                  # regenerate the four charts
 ```
 

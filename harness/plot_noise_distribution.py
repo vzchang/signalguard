@@ -23,7 +23,7 @@ import numpy as np
 
 matplotlib.use("Agg")  # headless render to file
 import matplotlib.pyplot as plt
-from deflated_sharpe_demo import (
+from deflated_sharpe import (
     _norm_ppf,
     sharpe_ratio,
 )

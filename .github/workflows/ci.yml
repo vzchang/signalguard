@@ -4,7 +4,7 @@ on:
     branches: [ main, master ]
   pull_request:
 jobs:
-  demo-suite:
+  harness-suite:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -17,7 +17,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: run all demos, tests, and charts
         run: python3 run_all.py
-        working-directory: demo
+        working-directory: harness
 
   lint:
     runs-on: ubuntu-latest
@@ -26,8 +26,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ruff
+      - run: pip install ruff mypy numpy
       - run: ruff check .
+      - name: mypy
+        run: mypy --ignore-missing-imports .
+        working-directory: harness
 
   # A pre-commit hook can be bypassed with --no-verify, so the same scan runs here
   # where it cannot be. See .pre-commit-config.yaml.

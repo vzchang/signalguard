@@ -14,7 +14,7 @@ understood backtest overfitting from someone who has not.
 > **The first deliverable is not a profitable strategy. It is a harness that can honestly
 > reject one.**
 
-![Best-of-200 noise trials produce an apparent 1.9 Sharpe; the Deflated Sharpe Ratio rejects it](demo/noise_sharpe_distribution.png)
+![Best-of-200 noise trials produce an apparent 1.9 Sharpe; the Deflated Sharpe Ratio rejects it](harness/noise_sharpe_distribution.png)
 
 *Search 200 pure-noise strategies and the best one "achieves" Sharpe 1.9. The Deflated Sharpe
 Ratio knows how many trials you ran, and rejects it.*
@@ -47,7 +47,7 @@ pip install -r requirements.txt
 ## Run it
 
 ```bash
-cd demo && python3 gate_demo.py
+cd harness && python3 gate_demo.py
 ```
 
 Real output — the same gate, on a strategy built to be overfit and on a clean one:
@@ -75,7 +75,7 @@ pass. The tests are plain asserts so the suite has no dependency beyond numpy, b
 written as `test_*` functions and run under pytest unmodified:
 
 ```bash
-cd demo && python3 -m pytest -q      # 27 passed
+cd harness && python3 -m pytest -q      # 27 passed
 ruff check .                         # from the repo root
 ```
 
@@ -86,10 +86,10 @@ numpy for the logic, deterministic, no market data or broker required.
 
 | Check | The failure mode it catches | Result |
 |---|---|---|
-| [`deflated_sharpe_demo.py`](demo/deflated_sharpe_demo.py) | Selection bias from searching many strategies | Best-of-200 noise "finds" 1.9 Sharpe → **rejected**, while a real edge still passes |
-| [`purged_cv_demo.py`](demo/purged_cv_demo.py) | Label leakage across overlapping samples | Shuffled k-fold reads 0.60 accuracy → purge + embargo collapses it to the honest **0.50** |
-| [`lookahead_detector_demo.py`](demo/lookahead_detector_demo.py) | Filling on the bar you decided from | A same-bar peek prints **+20 Sharpe from zero edge**; two detectors catch it |
-| [`walk_forward_demo.py`](demo/walk_forward_demo.py) | In-sample fit that doesn't survive | IS +0.87 → OOS +0.16, **walk-forward efficiency 0.18** |
+| [`deflated_sharpe.py`](harness/deflated_sharpe.py) | Selection bias from searching many strategies | Best-of-200 noise "finds" 1.9 Sharpe → **rejected**, while a real edge still passes |
+| [`purged_cv.py`](harness/purged_cv.py) | Label leakage across overlapping samples | Shuffled k-fold reads 0.60 accuracy → purge + embargo collapses it to the honest **0.50** |
+| [`lookahead_detector.py`](harness/lookahead_detector.py) | Filling on the bar you decided from | A same-bar peek prints **+20 Sharpe from zero edge**; two detectors catch it |
+| [`walk_forward.py`](harness/walk_forward.py) | In-sample fit that doesn't survive | IS +0.87 → OOS +0.16, **walk-forward efficiency 0.18** |
 
 ## Why the 1.9 Sharpe matters
 
@@ -130,7 +130,7 @@ flowchart LR
 ```
 
 Each check is independent, takes its own inputs, and returns `PASS`, `FAIL`, or `SKIP`.
-[`demo/gate.py`](demo/gate.py) composes them into one verdict. Two design decisions carry
+[`harness/gate.py`](harness/gate.py) composes them into one verdict. Two design decisions carry
 most of the weight:
 
 - **Silence is not consent.** A check missing its inputs returns `SKIP`, never a quiet
@@ -147,7 +147,7 @@ both that the harness works and why the trial counter has to be tamper-evident.
 | | Status |
 |---|---|
 | Validation harness — 4 checks, 1 composing gate, 27 tests, CI on 3 Python versions | ✅ **done, runnable** |
-| Validated against 155 years of S&P 500 data ([`real_data_gate.py`](demo/real_data_gate.py)) | ✅ **done** |
+| Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
 | The trading system itself — data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
 
 Phases, gates, and effort budgets are in [`PLAN.md`](PLAN.md). This is deliberately ordered:
@@ -181,7 +181,7 @@ kills every multi-entry intraday design before a line is written.
 
 | Path | What it is |
 |---|---|
-| [`demo/`](demo/) | The harness. 18 Python files, 27 tests, 4 charts. |
+| [`harness/`](harness/) | The validation harness. 18 Python files, 27 tests, 4 charts. |
 | [`DECISIONS.md`](DECISIONS.md) | Append-only decision log. The reasoning record. |
 | [`PLAN.md`](PLAN.md) | Phases 0–5 with gates, budgets, and explicit skip lists. |
 | [`docs/constitution.md`](docs/constitution.md) | Standing domain rules §2–§9: instrument, data, broker, risk. |

@@ -16,7 +16,7 @@ import numpy as np
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from walk_forward_demo import make_returns, walk_forward
+from walk_forward import make_returns, walk_forward
 
 INK, MUTED, GRID, SURFACE = "#1f2933", "#7b8794", "#e4e7eb", "#ffffff"
 IS_HUE = "#9aa5b1"    # muted: in-sample (the flattering number)

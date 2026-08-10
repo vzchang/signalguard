@@ -14,8 +14,8 @@ config.ini
 
 # Broker/vendor data and state
 data/
-!demo/data/
-!demo/data/**
+!harness/data/
+!harness/data/**
 !fixtures/
 logs/
 state/

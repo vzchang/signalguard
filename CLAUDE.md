@@ -44,7 +44,6 @@ only when the task needs it, and only the part you need:
 | What's next, what's blocked | `PLAN.md` §2 (phases) |
 | A module's interfaces | `docs/phase1-implementation.md` — the reconciled, buildable Phase 1 plan |
 | Why a decision is what it is | `DECISIONS.md` (append-only; grep, don't read) |
-| Paging/alerting rules | `docs/observability-design.md` §1 |
 | Provenance for a claim | `docs/research/` — 5 curated syntheses. Raw agent output lives in the separate private `signalguard-research` repo. |
 
 Rules: prefer `Grep`/`Glob` over `Read` on anything in `docs/`; read line ranges, not whole

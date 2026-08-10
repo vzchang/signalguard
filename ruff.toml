@@ -15,7 +15,7 @@ select = [
     "RUF",  # ruff-specific
 ]
 
-# Two findings in demo/run_all.py are suppressed inline with the reason at the call site:
+# Two findings in harness/run_all.py are suppressed inline with the reason at the call site:
 # the runner deliberately keeps going past a failing script so one invocation reports
 # every failure, which requires both check=False and a materialized list rather than a
 # short-circuiting generator.
