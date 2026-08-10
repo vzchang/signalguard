@@ -1,7 +1,7 @@
 """
 Visualize walk-forward decay: in-sample vs out-of-sample Sharpe per window.
 
-Paired bars per split -- the in-sample Sharpe the optimizer found, next to the
+Paired bars per split, the in-sample Sharpe the optimizer found, next to the
 out-of-sample Sharpe it actually delivered. The systematic drop from the first bar to the
 second, window after window, is overfitting made visible.
 
@@ -39,13 +39,18 @@ def main() -> None:
     w = 0.4
     ax.bar(x - w / 2, is_srs, w, color=IS_HUE, edgecolor=SURFACE, linewidth=1, zorder=3, label="in-sample")
     ax.bar(x + w / 2, oos_srs, w, color=OOS_HUE, edgecolor=SURFACE, linewidth=1, zorder=3, label="out-of-sample")
-    ax.axhline(0.0, color=ZERO, linewidth=1.2, zorder=2)
+    # Baseline sits above the bars. Below them it showed only in the gaps between
+    # groups, which read as scattered marks rather than one zero line.
+    ax.axhline(0.0, color=MUTED, linewidth=1.0, zorder=4)
+
+    # Headroom so the tallest bar cannot reach the subtitle.
+    ax.set_ylim(min(oos_srs.min(), 0) * 1.15, max(is_srs.max(), oos_srs.max()) * 1.28)
 
     ax.set_title("In-sample edge does not survive: walk-forward on pure noise",
                  fontsize=12.5, color=INK, fontweight="bold", loc="left", pad=12)
     ax.text(0, 1.015,
-            f"59 lookbacks optimized per window; mean IS {is_srs.mean():+.2f} -> OOS "
-            f"{oos_srs.mean():+.2f};  WFE {wfe:+.2f}",
+            f"59 lookbacks optimized per window; mean IS {is_srs.mean():+.2f} "
+            f"versus OOS {oos_srs.mean():+.2f}; walk-forward efficiency {wfe:+.2f}",
             transform=ax.transAxes, fontsize=9, color=MUTED)
     ax.set_xlabel("walk-forward split", fontsize=10, color=MUTED)
     ax.set_ylabel("Sharpe ratio", fontsize=10, color=MUTED)
@@ -54,8 +59,8 @@ def main() -> None:
 
     # legend as direct swatches, top-left, no heavy box
     leg = ax.legend(loc="upper right", frameon=False, fontsize=9)
-    for t, c in zip(leg.get_texts(), (MUTED, OOS_HUE)):
-        t.set_color(c)
+    for txt in leg.get_texts():
+        txt.set_color(MUTED)
 
     ax.grid(axis="y", color=GRID, linewidth=1, zorder=0)
     ax.set_axisbelow(True)

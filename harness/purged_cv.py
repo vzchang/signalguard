@@ -4,10 +4,9 @@ Purged K-Fold cross-validation: why plain k-fold lies on time series.
 The second pillar of an honest backtest, alongside the Deflated Sharpe Ratio.
 
 Premise
--------
 Financial labels span time. If a label at time t is computed over the next h bars
 (a forward return, a triple-barrier outcome), then a training sample near a test-fold
-boundary shares information with the test set -- its label window OVERLAPS the test
+boundary shares information with the test set, its label window OVERLAPS the test
 window. Standard K-Fold ignores this, so the model effectively sees the answer, and the
 cross-validated score is inflated. This is leakage, and it is the most common reason a
 "validated" strategy dies live.
@@ -16,8 +15,8 @@ Purging (drop training samples whose label window overlaps any test sample) plus
 embargo (drop a few samples immediately after each test block, to kill serial-correlation
 bleed) removes the leak. Lopez de Prado, Advances in Financial Machine Learning, ch. 7.
 
-This demo builds a deliberately leak-prone setup -- overlapping labels plus a feature that
-is mildly autocorrelated with its own label horizon -- and shows plain K-Fold reporting a
+This demo builds a deliberately leak-prone setup, overlapping labels plus a feature that
+is mildly autocorrelated with its own label horizon, and shows plain K-Fold reporting a
 falsely high score that purged K-Fold corrects downward toward the honest (near-random)
 truth. No market data, numpy-only, deterministic.
 
@@ -56,7 +55,7 @@ def kfold_indices(n: int, k: int, shuffle: bool, rng: np.random.Generator) -> li
 def purge_and_embargo(fold: Fold, label_horizon: int, embargo: int, n: int) -> Fold:
     """
     Remove every training sample within `label_horizon` (+`embargo` on the forward side) of
-    ANY test sample -- i.e. whose label window overlaps, or is adjacent to, a test label
+    ANY test sample, i.e. whose label window overlaps, or is adjacent to, a test label
     window. This is the general purge (works for shuffled or contiguous folds), not just a
     single-boundary trim.
     """
@@ -74,7 +73,7 @@ def make_leaky_dataset(n: int, label_horizon: int,
                        rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
     """
     Feature x is pure noise. Label y is the sign of a FORWARD-looking sum over the next
-    `label_horizon` bars of a series that x is only weakly tied to -- so the TRUE
+    `label_horizon` bars of a series that x is only weakly tied to, so the TRUE
     predictive power of x for y is near zero. But because consecutive labels share
     overlapping forward windows, adjacent samples' labels are highly correlated; a model
     that memorizes a neighbor's label (leaked via an un-purged fold) scores far above
@@ -128,11 +127,11 @@ def main() -> None:
     purged = run_cv(x, y, shuf, purge=True, label_horizon=label_horizon, embargo=embargo, n=n)
 
     print("=" * 72)
-    print("  Purged K-Fold -- removing the leak that inflates a backtest")
+    print("  Purged K-Fold, removing the leak that inflates a backtest")
     print("=" * 72)
     print(f"  samples: {n}   folds: {k}   label horizon: {label_horizon} bars   embargo: {embargo}")
     print(f"  feature has only a whisper of true signal; labels overlap by {label_horizon} bars")
-    print("  folds are SHUFFLED -- the common sin on time series\n")
+    print("  folds are SHUFFLED, the common sin on time series\n")
     print(f"  majority-class baseline (no skill)     : {base_rate:6.3f}")
     print(f"  plain  shuffled K-Fold accuracy        : {plain:6.3f}   <- inflated by leakage")
     print(f"  purged shuffled K-Fold accuracy        : {purged:6.3f}   <- honest, collapses toward baseline")

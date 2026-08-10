@@ -2,7 +2,7 @@
 Visualize the lookahead peek: two equity curves from the SAME signal.
 
 The cheating (same-bar) fill compounds a smooth rocket; the honest (next-bar) fill wanders
-around flat. Same strategy, same data -- the only difference is whether you booked the
+around flat. Same strategy, same data, the only difference is whether you booked the
 return that defined your signal. That divergence is the peek, drawn.
 
 Output: lookahead_equity.png  (headless).
@@ -46,8 +46,11 @@ def main() -> None:
     ax.annotate("same-bar fill (peek)\nbooks the return it used",
                 xy=(x[-1], eq_cheat[len(x) - 1]), xytext=(x[-1] * 0.60, eq_cheat[len(x) - 1]),
                 ha="right", va="center", fontsize=9, color=CHEAT, fontweight="bold")
-    ax.annotate("next-bar fill (honest)\nno edge -- wanders near 1.0",
-                xy=(x[-1], eq_honest[-1]), xytext=(x[-1] * 0.60, eq_honest[-1] * 0.6),
+    # Sits below the honest curve, not on it. At its own level the text landed on both
+    # the line and the 1.0 reference.
+    ax.set_ylim(0.32, eq_cheat.max() * 3.2)
+    ax.annotate("next-bar fill (honest)\nno edge, wanders near 1.0",
+                xy=(x[-1], eq_honest[-1]), xytext=(x[-1] * 0.62, 0.46),
                 ha="right", va="center", fontsize=9, color=HONEST, fontweight="bold")
 
     ax.set_title("Same signal, two fill rules: the peek is a rocket, the truth is flat",

@@ -30,7 +30,6 @@ from deflated_sharpe import (
 
 TRADING_DAYS = 252
 
-# --- palette: neutral surface, one data hue, reserved status hues -------------------
 INK        = "#1f2933"   # primary text
 MUTED      = "#7b8794"   # axis / secondary text
 GRID       = "#e4e7eb"   # recessive gridline
@@ -59,33 +58,42 @@ def main() -> None:
     winner = sharpes.max()
     dsr_bench = expected_max_benchmark(n_trials, var_daily) * math.sqrt(TRADING_DAYS)
 
-    fig, ax = plt.subplots(figsize=(9, 5.2), dpi=130)
+    fig, ax = plt.subplots(figsize=(10, 5.4), dpi=130)
     fig.patch.set_facecolor(SURFACE)
     ax.set_facecolor(SURFACE)
 
     # distribution: one hue, thin white separators between bars (2px surface gap feel)
-    ax.hist(sharpes, bins=24, color=SERIES, alpha=0.85,
-            edgecolor=SURFACE, linewidth=1.2, zorder=2)
+    counts, _, _ = ax.hist(sharpes, bins=24, color=SERIES, alpha=0.85,
+                           edgecolor=SURFACE, linewidth=1.2, zorder=2)
 
-    # threshold 1: naive PSR benchmark (zero) -- the misleading "pass" line
-    ax.axvline(0.0, color=WARN, linewidth=2, linestyle=(0, (4, 2)), zorder=3)
-    # threshold 2: DSR benchmark -- the bar a real edge must clear
-    ax.axvline(dsr_bench, color=CRITICAL, linewidth=2, linestyle=(0, (4, 2)), zorder=3)
+    # Reserve a band above the tallest bar for labels. The threshold lines stop at the
+    # top of the data so they never run through their own text.
+    bar_top = float(np.asarray(counts).max())
+    line_top = bar_top * 1.03
+    ax.set_ylim(0, bar_top * 1.44)
+    ax.set_xlim(sharpes.min() - 0.35, dsr_bench + 1.35)
+
+    # threshold 1: naive PSR benchmark (zero), the misleading "pass" line
+    ax.vlines(0.0, 0, line_top, color=WARN, linewidth=2, linestyle=(0, (4, 2)), zorder=3)
+    # threshold 2: DSR benchmark, the bar a real edge must clear
+    ax.vlines(dsr_bench, 0, line_top, color=CRITICAL, linewidth=2,
+              linestyle=(0, (4, 2)), zorder=3)
     # the selected winner
-    ax.axvline(winner, color=CRITICAL, linewidth=2.5, zorder=4)
+    ax.vlines(winner, 0, line_top, color=CRITICAL, linewidth=2.5, zorder=4)
 
-    ymax = ax.get_ylim()[1]
-    ax.annotate("naive benchmark (0)\nwinner clears this -> ACCEPT (wrong)",
-                xy=(0.0, ymax * 0.96), xytext=(0.0, ymax * 0.96),
-                ha="center", va="top", fontsize=8.5, color=WARN, fontweight="bold")
-    ax.annotate(f"DSR benchmark {dsr_bench:.2f}\n(expected max from 200 trials)",
-                xy=(dsr_bench, ymax * 0.62), xytext=(dsr_bench + 0.12, ymax * 0.62),
-                ha="left", va="center", fontsize=8.5, color=CRITICAL)
-    ax.annotate(f"selected winner {winner:.2f}\nbelow the DSR bar -> REJECT (correct)",
-                xy=(winner, ymax * 0.30), xytext=(winner + 0.12, ymax * 0.30),
-                ha="left", va="center", fontsize=8.5, color=CRITICAL, fontweight="bold")
+    leader = {"arrowstyle": "-", "linewidth": 1, "shrinkA": 3, "shrinkB": 1}
+    ax.text(0.0, line_top * 1.03, "naive benchmark (0)\nthe winner clears this: ACCEPT, wrongly",
+            ha="center", va="bottom", fontsize=8.5, color=WARN, fontweight="bold")
+    ax.annotate(f"selected winner {winner:.2f}\nbelow the bar: REJECT, correctly",
+                xy=(winner, line_top), xytext=(winner - 0.30, bar_top * 1.30),
+                ha="right", va="center", fontsize=8.5, color=CRITICAL, fontweight="bold",
+                arrowprops={**leader, "color": CRITICAL})
+    ax.annotate(f"DSR benchmark {dsr_bench:.2f}\nexpected max of 200 trials",
+                xy=(dsr_bench, line_top), xytext=(dsr_bench + 0.22, bar_top * 1.14),
+                ha="left", va="center", fontsize=8.5, color=CRITICAL,
+                arrowprops={**leader, "color": CRITICAL})
 
-    ax.set_title("200 strategies on pure noise: the 'winner' is just the tail",
+    ax.set_title("200 strategies on pure noise: the winner is just the tail",
                  fontsize=13, color=INK, fontweight="bold", pad=14, loc="left")
     ax.text(0, 1.015, "annualized Sharpe of each mean-zero strategy; true edge is zero",
             transform=ax.transAxes, fontsize=9.5, color=MUTED)

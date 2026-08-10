@@ -3,7 +3,7 @@ Tests for the lookahead-bias detector demo (plain-assert, no pytest).
 
 Headline test: the same-bar (cheating) strategy prints a huge Sharpe from a zero-edge
 random walk, the next-bar (honest) strategy sits near zero, and the fill-timing audit's
-gap is enormous -- i.e. the detector catches the peek. That is half the Phase 1 gate.
+gap is enormous, i.e. the detector catches the peek. That is half the Phase 1 gate.
 """
 from __future__ import annotations
 
@@ -24,10 +24,10 @@ def test_random_walk_has_no_autocorrelation() -> None:
 
 
 def test_same_bar_pnl_is_absolute_value() -> None:
-    """The cheat books sign(r)*r == |r| every bar -- the algebraic proof it peeks."""
+    """The cheat books sign(r)*r == |r| every bar, the algebraic proof it peeks."""
     r = make_returns(500, np.random.default_rng(1))
     assert np.allclose(pnl_same_bar(r), np.abs(r)), "same-bar pnl must equal |r|"
-    assert (pnl_same_bar(r) >= 0).all(), "the cheat is never negative -- that's the tell"
+    assert (pnl_same_bar(r) >= 0).all(), "the cheat is never negative, that's the tell"
 
 
 def test_honest_momentum_has_no_edge_on_random_walk() -> None:

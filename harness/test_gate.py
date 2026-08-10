@@ -2,7 +2,7 @@
 Tests for the unified validation gate (plain-assert, no pytest).
 
 Headline tests: the gate REJECTS an overfitting artifact and ACCEPTS a clean strategy, and
--- the property that matters most -- it never returns a silent PASS. A missing input is SKIP;
+and, the property that matters most, it never returns a silent PASS. A missing input is SKIP;
 an undefined (nan) score is FAIL, not PASS.
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ def test_THE_GATE_rejects_artifact_accepts_clean() -> None:
 
 
 def test_accept_requires_at_least_one_check_ran() -> None:
-    """A verdict where everything SKIPped is NOT an accept -- silence is not consent."""
+    """A verdict where everything SKIPped is NOT an accept, silence is not consent."""
     v = evaluate()  # no inputs at all -> all SKIP
     assert all(c.status is Status.SKIP for c in v.checks)
     assert v.accepted is False, "all-SKIP must not count as ACCEPT"

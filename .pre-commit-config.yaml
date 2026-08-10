@@ -1,6 +1,7 @@
 # Secret scanning runs pre-commit AND in CI, because hooks can be bypassed.
 # Install once:  pre-commit install
 # Baseline once: detect-secrets scan > .secrets.baseline
+
 repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.4

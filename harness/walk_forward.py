@@ -7,7 +7,7 @@ Efficiency (WFE) = out-of-sample Sharpe / in-sample Sharpe. WFE near 1 means the
 performance was real; WFE near 0 (or negative) means it was curve-fit and evaporated.
 
 This demo runs walk-forward on an OVERFIT-PRONE strategy (many parameters searched, little
-real signal) and shows the OOS Sharpe collapsing far below the IS Sharpe across windows --
+real signal) and shows the OOS Sharpe collapsing far below the IS Sharpe across windows,
 the visual signature of overfitting. Deterministic, numpy-only.
 
 Run:  python3 walk_forward.py
@@ -82,7 +82,7 @@ def main() -> None:
     wfe = oos_srs.mean() / is_srs.mean() if is_srs.mean() != 0 else float("nan")
 
     print("=" * 72)
-    print("  Walk-forward efficiency -- how much in-sample edge survives out-of-sample")
+    print("  Walk-forward efficiency, how much in-sample edge survives out-of-sample")
     print("=" * 72)
     print(f"  {len(grid)} lookbacks searched per window; random walk (true edge = ZERO)\n")
     print("  split   chosen LB   in-sample SR   out-of-sample SR")

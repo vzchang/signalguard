@@ -4,17 +4,16 @@ Deflated Sharpe Ratio: rejecting strategies that are only lucky.
 The demo that most retail trading projects should run and almost none do.
 
 Premise
--------
 If you try N strategies on noise and keep the best one, its in-sample Sharpe looks
-great -- purely by selection. The Probabilistic Sharpe Ratio (PSR) tests one Sharpe
+great, purely by selection. The Probabilistic Sharpe Ratio (PSR) tests one Sharpe
 against a benchmark but knows nothing about how many you tried, so it happily blesses
 the winner. The Deflated Sharpe Ratio (DSR, Bailey & Lopez de Prado 2014) haircuts the
 observed Sharpe by the number of trials, the skew and kurtosis of returns, and the
-sample length -- and correctly refuses to call the noise winner "real".
+sample length, and correctly refuses to call the noise winner "real".
 
 This script generates PURE NOISE (zero true edge), selects the best of N backtests,
 and shows PSR passing it while DSR rejects it. Then it shows DSR does NOT reject a
-genuinely-edged strategy -- i.e. it is a discriminator, not a blanket "no".
+genuinely-edged strategy, i.e. it is a discriminator, not a blanket "no".
 
 No market data, no dependencies beyond numpy. Deterministic (seeded).
 
@@ -30,7 +29,7 @@ TRADING_DAYS = 252
 
 
 def _norm_cdf(x: float) -> float:
-    """Standard normal CDF via erf -- avoids a scipy dependency."""
+    """Standard normal CDF via erf, avoids a scipy dependency."""
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
 
@@ -63,7 +62,7 @@ def probabilistic_sharpe_ratio(returns: np.ndarray, sr_benchmark: float = 0.0) -
     """
     PSR: P(true SR > benchmark SR) given the observed SR and the return distribution's
     higher moments. Bailey & Lopez de Prado (2012). Returns a probability in [0, 1].
-    Knows nothing about how many strategies were tried -- that is DSR's job.
+    Knows nothing about how many strategies were tried, that is DSR's job.
     """
     n = len(returns)
     sr = sharpe_ratio(returns)
@@ -153,7 +152,7 @@ def main() -> None:
     cut = 0.95  # accept only if P(real) >= 95%
 
     print("=" * 72)
-    print("  Deflated Sharpe Ratio -- rejecting a lucky noise strategy")
+    print("  Deflated Sharpe Ratio, rejecting a lucky noise strategy")
     print("=" * 72)
     print(f"  sample: {n_obs} daily obs (~2y)   trials searched: {n_trials}"
           f"   accept if >= {cut}\n")

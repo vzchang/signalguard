@@ -2,7 +2,7 @@
 Lookahead-bias detector: catching the strategy that peeks.
 
 The other half of the Phase 1 gate. A validation harness is only trustworthy if it can
-catch a strategy that cheats -- so you build the cheater on purpose and prove the detector
+catch a strategy that cheats, so you build the cheater on purpose and prove the detector
 fires.
 
 The classic retail leak is the same-bar fill: a signal computed from bar t's CLOSE, then
@@ -10,9 +10,9 @@ The classic retail leak is the same-bar fill: a signal computed from bar t's CLO
 once the bar is over. The honest version fills at bar t+1's OPEN.
 
 Two independent detectors here, because no single one catches every class:
-  1. Timestamp-shift test -- re-run the strategy with the price series shifted so that
+  1. Timestamp-shift test, re-run the strategy with the price series shifted so that
      decision-time information is genuinely unavailable; a leaking strategy's edge collapses.
-  2. Fill-timing audit -- compare same-bar-close fills vs next-bar-open fills on identical
+  2. Fill-timing audit, compare same-bar-close fills vs next-bar-open fills on identical
      signals; a large, systematically favorable gap is the signature of the peek.
 
 Deterministic, numpy-only. Run:  python3 lookahead_detector.py
@@ -51,7 +51,7 @@ def momentum_signal(r: np.ndarray) -> np.ndarray:
 def pnl_next_bar(r: np.ndarray) -> np.ndarray:
     """
     THE HONEST FILL: the position decided from r[i] earns the NEXT return r[i+1]. On a random
-    walk this is ~0 Sharpe -- momentum has no edge, which is the truth.
+    walk this is ~0 Sharpe, momentum has no edge, which is the truth.
     """
     sig = momentum_signal(r)
     return sig[:-1] * r[1:]         # position from r[i] applied to r[i+1]
@@ -59,7 +59,7 @@ def pnl_next_bar(r: np.ndarray) -> np.ndarray:
 
 def pnl_same_bar(r: np.ndarray) -> np.ndarray:
     """
-    THE CHEAT: the position decided from r[i] is credited with r[i] ITSELF -- i.e. you booked
+    THE CHEAT: the position decided from r[i] is credited with r[i] ITSELF, i.e. you booked
     the very return that defined your signal. sign(r[i]) * r[i] = |r[i]| >= 0 on every bar,
     a tautologically positive, enormous Sharpe from zero real edge. This is the same-bar peek:
     a signal computed from bar t's close, filled as if you traded before that close existed.
@@ -80,7 +80,7 @@ def shuffle_test(r: np.ndarray, use_cheat: bool, rng: np.random.Generator,
     """
     Detector B. Destroy the time-alignment between signal and the return it books, by
     shuffling. A genuine edge survives above the shuffled null; a same-bar LEAK also survives
-    (because sign(r)*r stays |r| under any pairing that keeps them aligned) -- so the tell is:
+    (because sign(r)*r stays |r| under any pairing that keeps them aligned), so the tell is:
     the cheat's Sharpe is astronomically far outside ANY plausible null, i.e. p ~ 0 with an
     effect size no real daily strategy ever shows. Returns (sr, p, null_mean).
     """
@@ -98,7 +98,7 @@ def main() -> None:
     r = make_returns(1500, rng)
 
     print("=" * 72)
-    print("  Lookahead detector -- catching a strategy that books the bar it traded on")
+    print("  Lookahead detector, catching a strategy that books the bar it traded on")
     print("=" * 72)
     print("  trailing-momentum signal on a random walk (true edge = ZERO)\n")
 
@@ -109,7 +109,7 @@ def main() -> None:
     print(f"    favorable gap (the peek)     : {gap:+7.2f}   <- a gap this large IS the signature")
     print()
 
-    print("  DETECTOR B  shuffle test -- effect size vs a destroyed-alignment null")
+    print("  DETECTOR B  shuffle test, effect size vs a destroyed-alignment null")
     hs, hp, hnull = shuffle_test(r, use_cheat=False, rng=np.random.default_rng(7))
     cs, _, cnull = shuffle_test(r, use_cheat=True, rng=np.random.default_rng(7))
     print(f"    honest strategy Sharpe {hs:+6.2f}  vs null mean {hnull:+5.2f}  ->  "

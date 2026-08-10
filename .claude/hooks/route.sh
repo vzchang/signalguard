@@ -68,12 +68,12 @@ fi
 
 # --- 7. Decisions that are closed unless new arithmetic shows up ---
 if m '\b(mnq|crypto|bitcoin|coinbase|kraken|binance|ib_async|ib.insync|prop firm|apex|topstep)\b.*\b(instead|switch|reconsider|why not|should we|use)\b|\b(reconsider|revisit|re.?open|change) (the )?(instrument|engine|broker|data ?vendor)\b'; then
-  add "[route] PLAN.md §0 decided this on measured arithmetic. New arithmetic can reopen it; preference cannot."
+  add "[route] Decided on measured arithmetic. New arithmetic can reopen it; preference cannot."
 fi
 
 # --- 8. The big-doc trap ---
 if m '\b(read|summari[sz]e|go through|review|ingest|look through) ((the|all|every|this|my) )?((whole|entire|full|complete) )?(research|raw|docs?|documentation|everything|codebase|repo|all the (files|docs))\b|\bdocs/research\b'; then
-  add "[route] docs/research/raw is 1.7 MB / 51 files. GREP for the claim; never read it (§0)."
+  add "[route] The research archive is large and private. GREP for the claim; never read it."
 fi
 
 # --- 9a. EXPLICIT ask for a skill. Always fires, never deduped, and not gated on

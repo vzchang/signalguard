@@ -2,7 +2,7 @@
 Tests for the purged K-Fold demo (plain-assert, no pytest dependency).
 
 Headline test: on the leaky dataset, plain shuffled K-Fold scores materially above the
-majority baseline, and purged K-Fold collapses back toward it -- i.e. purging removes the
+majority baseline, and purged K-Fold collapses back toward it, i.e. purging removes the
 leak. That single comparison is the point of the module.
 """
 from __future__ import annotations

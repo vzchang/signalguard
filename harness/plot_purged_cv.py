@@ -45,8 +45,8 @@ def main() -> None:
 
     # no-skill baseline reference
     ax.axhline(base, color=BASELINE, linewidth=2, linestyle=(0, (4, 2)), zorder=2)
-    ax.text(len(labels) - 0.5, base + 0.002, f"no-skill baseline {base:.3f}",
-            ha="right", va="bottom", fontsize=8.5, color=BASELINE, fontweight="bold")
+    ax.text(1.34, base + 0.004, f"no-skill baseline {base:.3f}",
+            ha="left", va="bottom", fontsize=8.5, color=BASELINE, fontweight="bold")
 
     for xi, v in zip(xs, vals):
         ax.text(xi, v + 0.002, f"{v:.3f}", ha="center", va="bottom",
@@ -55,7 +55,7 @@ def main() -> None:
     # annotate the leak as the drop from plain to purged
     ax.annotate("", xy=(1, purged), xytext=(1, plain),
                 arrowprops={"arrowstyle": "<->", "color": MUTED, "lw": 1.3})
-    ax.text(1.06, (plain + purged) / 2, f"leak\n{plain - purged:+.3f}",
+    ax.text(1.34, (plain + purged) / 2, f"leak {plain - purged:+.3f}",
             ha="left", va="center", fontsize=9, color=MUTED)
 
     ax.set_title("Purging removes the leak that made the backtest look skillful",
@@ -66,10 +66,11 @@ def main() -> None:
     ax.set_xticklabels(labels, fontsize=9.5, color=INK)
     ax.set_ylabel("cross-validated accuracy", fontsize=10, color=MUTED)
     # bars measure magnitude, so the axis MUST start at zero (a truncated bar axis lies).
-    # 0.5 (coin-flip) is the meaningful floor for a binary classifier -- mark it, don't crop to it.
+    # 0.5 (coin-flip) is the meaningful floor for a binary classifier, mark it, don't crop to it.
     ax.set_ylim(0.0, plain + 0.06)
+    ax.set_xlim(-0.55, 2.15)
     ax.axhline(0.5, color=MUTED, linewidth=1, linestyle=":", zorder=1)
-    ax.text(-0.45, 0.5, "coin flip 0.5", ha="left", va="bottom", fontsize=8, color=MUTED)
+    ax.text(1.34, 0.5 - 0.004, "coin flip 0.5", ha="left", va="top", fontsize=8, color=MUTED)
 
     ax.grid(axis="y", color=GRID, linewidth=1, zorder=0)
     ax.set_axisbelow(True)

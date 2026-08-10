@@ -1,12 +1,12 @@
 """
 The SignalGuard validation gate: run all four overfitting checks, return one verdict.
 
-This is the thesis of the whole project in one function -- "a harness that can honestly
+This is the thesis of the whole project in one function, "a harness that can honestly
 reject a strategy." Each of the four demo modules contributes one check; this composes them
 into a single ACCEPT / REJECT decision with a reason per check.
 
 A strategy is represented as its realized per-bar returns plus the metadata the checks need
-(how many trials were searched to find it, and -- for the lookahead audit -- the raw price
+(how many trials were searched to find it, and, for the lookahead audit, the raw price
 series so the same-bar-vs-next-bar comparison can be made). Not every check
 applies to every strategy; a check that lacks its inputs reports SKIP, never a false PASS.
 
@@ -74,7 +74,6 @@ class Verdict:
         return "\n".join(lines)
 
 
-# --- individual checks: each returns a CheckResult, each fails LOUD not silent ----------
 
 def check_deflated_sharpe(returns: np.ndarray | None,
                           n_trials: int | None,
@@ -128,7 +127,7 @@ def check_purged_cv(plain_acc: float | None, purged_acc: float | None,
     if math.isnan(plain_acc) or math.isnan(purged_acc):
         # a nan score is undefined, not a pass. Fail loud (prime directive: no silent PASS).
         return CheckResult("purged_cv", Status.FAIL,
-                           "CV score undefined (nan) -- purge left no training data; "
+                           "CV score undefined (nan), purge left no training data; "
                            "cannot certify the fold is leak-free")
     leak = plain_acc - purged_acc
     if purged_acc <= baseline + 0.02 and leak > margin:

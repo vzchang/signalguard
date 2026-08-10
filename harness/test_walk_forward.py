@@ -2,7 +2,7 @@
 Tests for the walk-forward demo (plain-assert, no pytest).
 
 Headline: on a zero-edge random walk, per-window optimization produces a positive mean
-in-sample Sharpe that does NOT survive out-of-sample -- walk-forward efficiency well below 1.
+in-sample Sharpe that does NOT survive out-of-sample, walk-forward efficiency well below 1.
 """
 from __future__ import annotations
 
