@@ -6,10 +6,13 @@ majority baseline, and purged K-Fold collapses back toward it -- i.e. purging re
 leak. That single comparison is the point of the module.
 """
 from __future__ import annotations
-import numpy as np
 
+import numpy as np
 from purged_cv_demo import (
-    kfold_indices, purge_and_embargo, make_leaky_dataset, run_cv,
+    kfold_indices,
+    make_leaky_dataset,
+    purge_and_embargo,
+    run_cv,
 )
 
 

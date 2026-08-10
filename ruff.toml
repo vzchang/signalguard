@@ -1,0 +1,21 @@
+# Pinned explicitly so CI and a local run agree, and so the rule set is a decision
+# rather than whatever the installed ruff happens to default to.
+line-length = 115
+target-version = "py39"
+
+[lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "C4",   # comprehension simplifications
+    "SIM",  # simplifications
+    "RUF",  # ruff-specific
+]
+
+# Two findings in demo/run_all.py are suppressed inline with the reason at the call site:
+# the runner deliberately keeps going past a failing script so one invocation reports
+# every failure, which requires both check=False and a materialized list rather than a
+# short-circuiting generator.

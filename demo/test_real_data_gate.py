@@ -6,13 +6,11 @@ the best-of-many MA search on a short window is REJECTED. Proves the gate discri
 real prices, not just synthetic. Requires demo/data/sp500.csv to be present.
 """
 from __future__ import annotations
+
 import math
-from pathlib import Path
 
-import numpy as np
-
-from real_data_gate import load_sp500_returns, ma_crossover_search, DATA
-from gate import evaluate, Status
+from gate import Status, evaluate
+from real_data_gate import DATA, load_sp500_returns, ma_crossover_search
 
 
 def test_data_file_present_and_sane():

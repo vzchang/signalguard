@@ -15,14 +15,17 @@ data series, thin marks, recessive grid/spines, direct labels instead of a legen
 Run:  python3 plot_noise_distribution.py
 """
 from __future__ import annotations
+
 import math
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")  # headless render to file
 import matplotlib.pyplot as plt
-
 from deflated_sharpe_demo import (
-    sharpe_ratio, deflated_sharpe_ratio, probabilistic_sharpe_ratio, _norm_ppf,
+    _norm_ppf,
+    sharpe_ratio,
 )
 
 TRADING_DAYS = 252

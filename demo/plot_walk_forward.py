@@ -10,11 +10,12 @@ Design: two categorical hues (in-sample vs out-of-sample) in FIXED order, a zero
 line, recessive chrome, a WFE callout.
 """
 from __future__ import annotations
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 from walk_forward_demo import make_returns, walk_forward
 
 INK, MUTED, GRID, SURFACE = "#1f2933", "#7b8794", "#e4e7eb", "#ffffff"
@@ -31,9 +32,11 @@ def main() -> None:
     wfe = oos_srs.mean() / is_srs.mean()
 
     fig, ax = plt.subplots(figsize=(9, 5), dpi=130)
-    fig.patch.set_facecolor(SURFACE); ax.set_facecolor(SURFACE)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
 
-    x = np.arange(len(rows)); w = 0.4
+    x = np.arange(len(rows))
+    w = 0.4
     ax.bar(x - w / 2, is_srs, w, color=IS_HUE, edgecolor=SURFACE, linewidth=1, zorder=3, label="in-sample")
     ax.bar(x + w / 2, oos_srs, w, color=OOS_HUE, edgecolor=SURFACE, linewidth=1, zorder=3, label="out-of-sample")
     ax.axhline(0.0, color=ZERO, linewidth=1.2, zorder=2)
@@ -46,14 +49,16 @@ def main() -> None:
             transform=ax.transAxes, fontsize=9, color=MUTED)
     ax.set_xlabel("walk-forward split", fontsize=10, color=MUTED)
     ax.set_ylabel("Sharpe ratio", fontsize=10, color=MUTED)
-    ax.set_xticks(x); ax.set_xticklabels([str(i + 1) for i in x], fontsize=9, color=INK)
+    ax.set_xticks(x)
+    ax.set_xticklabels([str(i + 1) for i in x], fontsize=9, color=INK)
 
     # legend as direct swatches, top-left, no heavy box
     leg = ax.legend(loc="upper right", frameon=False, fontsize=9)
     for t, c in zip(leg.get_texts(), (MUTED, OOS_HUE)):
         t.set_color(c)
 
-    ax.grid(axis="y", color=GRID, linewidth=1, zorder=0); ax.set_axisbelow(True)
+    ax.grid(axis="y", color=GRID, linewidth=1, zorder=0)
+    ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):

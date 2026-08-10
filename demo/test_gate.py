@@ -6,14 +6,17 @@ Headline tests: the gate REJECTS an overfitting artifact and ACCEPTS a clean str
 an undefined (nan) score is FAIL, not PASS.
 """
 from __future__ import annotations
-import math
-import numpy as np
 
+import numpy as np
 from gate import (
-    evaluate, Status,
-    check_deflated_sharpe, check_lookahead, check_purged_cv, check_walk_forward,
+    Status,
+    check_deflated_sharpe,
+    check_lookahead,
+    check_purged_cv,
+    check_walk_forward,
+    evaluate,
 )
-from gate_demo import scenario_overfit_artifact, scenario_clean_strategy
+from gate_demo import scenario_clean_strategy, scenario_overfit_artifact
 
 
 def test_THE_GATE_rejects_artifact_accepts_clean():

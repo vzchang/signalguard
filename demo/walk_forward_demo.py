@@ -13,7 +13,9 @@ the visual signature of overfitting. Deterministic, numpy-only.
 Run:  python3 walk_forward_demo.py
 """
 from __future__ import annotations
+
 import math
+
 import numpy as np
 
 TRADING_DAYS = 252
@@ -35,8 +37,7 @@ def strategy_returns(r: np.ndarray, lookback: int) -> np.ndarray:
     `lookback` bars, applied to the next bar. next-bar fill, no lookahead. The parameter is
     what gets optimized in-sample and frozen out-of-sample.
     """
-    if lookback < 1:
-        lookback = 1
+    lookback = max(lookback, 1)
     trail = np.array([r[max(0, i - lookback):i].sum() for i in range(len(r))])
     pos = np.sign(trail)
     return pos[:-1] * r[1:]

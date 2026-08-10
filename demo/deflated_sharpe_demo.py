@@ -21,7 +21,9 @@ No market data, no dependencies beyond numpy. Deterministic (seeded).
 Run:  python3 deflated_sharpe_demo.py
 """
 from __future__ import annotations
+
 import math
+
 import numpy as np
 
 TRADING_DAYS = 252

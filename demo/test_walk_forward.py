@@ -5,16 +5,17 @@ Headline: on a zero-edge random walk, per-window optimization produces a positiv
 in-sample Sharpe that does NOT survive out-of-sample -- walk-forward efficiency well below 1.
 """
 from __future__ import annotations
-import numpy as np
 
-from walk_forward_demo import make_returns, strategy_returns, best_lookback, walk_forward, sharpe
+import numpy as np
+from walk_forward_demo import best_lookback, make_returns, strategy_returns, walk_forward
 
 
 def test_no_lookahead_in_strategy():
     """strategy_returns must never use a bar's own or future return for its position."""
     r = make_returns(200, np.random.default_rng(0))
     # zero out the tail; positions for the early bars must be unchanged
-    r2 = r.copy(); r2[100:] = 0.0
+    r2 = r.copy()
+    r2[100:] = 0.0
     a = strategy_returns(r, 10)[:90]
     b = strategy_returns(r2, 10)[:90]
     assert np.allclose(a, b), "early positions must not depend on future returns"

@@ -8,13 +8,12 @@ every check it can run. A tool, not four tutorials.
 Run:  python3 gate_demo.py
 """
 from __future__ import annotations
-import math
-import numpy as np
 
+import numpy as np
+from deflated_sharpe_demo import best_of_n_noise
 from gate import evaluate
-from deflated_sharpe_demo import sharpe_ratio, best_of_n_noise
 from lookahead_detector_demo import make_returns
-from purged_cv_demo import make_leaky_dataset, kfold_indices, run_cv
+from purged_cv_demo import kfold_indices, make_leaky_dataset, run_cv
 from walk_forward_demo import make_returns as wf_make_returns
 
 

@@ -6,10 +6,14 @@ random walk, the next-bar (honest) strategy sits near zero, and the fill-timing 
 gap is enormous -- i.e. the detector catches the peek. That is half the Phase 1 gate.
 """
 from __future__ import annotations
-import numpy as np
 
+import numpy as np
 from lookahead_detector_demo import (
-    make_returns, momentum_signal, pnl_same_bar, pnl_next_bar, sharpe, fill_timing_audit,
+    fill_timing_audit,
+    make_returns,
+    pnl_next_bar,
+    pnl_same_bar,
+    sharpe,
 )
 
 

@@ -19,10 +19,34 @@ understood backtest overfitting from someone who has not.
 *Search 200 pure-noise strategies and the best one "achieves" Sharpe 1.9. The Deflated Sharpe
 Ratio knows how many trials you ran, and rejects it.*
 
+## The problem
+
+A backtest is a search. Try enough strategies against the same history and one of them will
+post a great Sharpe for the same reason one of a thousand coin-flippers gets ten heads — and
+the backtest reports that number with no memory of how many candidates it rejected to find
+it. Every standard failure here has the same shape: the result is real, the *inference* from
+it is not. Selection bias, label leakage across overlapping samples, filling on the bar you
+decided from, and a fit that doesn't outlive its sample all produce a curve that goes up and
+tells you nothing.
+
+SignalGuard is the gate that stands between a backtest and belief in it. It takes a
+strategy's returns and the search that produced them, and returns `ACCEPT`, `REJECT`, or
+`SKIP` with a reason.
+
+## Install
+
+Python 3.9, 3.11, and 3.12 are tested in CI. Core logic and tests need only numpy;
+matplotlib is used solely to regenerate charts.
+
+```bash
+git clone https://github.com/vzchang/signalguard.git
+cd signalguard
+pip install -r requirements.txt
+```
+
 ## Run it
 
 ```bash
-pip install -r requirements.txt
 cd demo && python3 gate_demo.py
 ```
 
@@ -46,7 +70,14 @@ SignalGuard validation gate
   VERDICT: ACCEPT (3/3 checks passed)
 ```
 
-`python3 run_all.py` runs every demo, all 27 tests, and regenerates every chart.
+`python3 run_all.py` runs every demo, all 27 tests, and regenerates every chart in one
+pass. The tests are plain asserts so the suite has no dependency beyond numpy, but they are
+written as `test_*` functions and run under pytest unmodified:
+
+```bash
+cd demo && python3 -m pytest -q      # 27 passed
+ruff check .                         # from the repo root
+```
 
 ## What it catches
 
@@ -60,10 +91,47 @@ numpy for the logic, deterministic, no market data or broker required.
 | [`lookahead_detector_demo.py`](demo/lookahead_detector_demo.py) | Filling on the bar you decided from | A same-bar peek prints **+20 Sharpe from zero edge**; two detectors catch it |
 | [`walk_forward_demo.py`](demo/walk_forward_demo.py) | In-sample fit that doesn't survive | IS +0.87 → OOS +0.16, **walk-forward efficiency 0.18** |
 
-## How the gate is built
+## Why the 1.9 Sharpe matters
 
-[`demo/gate.py`](demo/gate.py) composes the four checks into one verdict. Two design
-decisions carry most of the weight:
+It is the whole argument in one number. Those 200 strategies have **no edge at all** — they
+are trading pure noise, and their true expected Sharpe is zero. Search them, keep the best,
+and the winner reports 1.9.
+
+Two things follow, and they are why the rest of the repo is shaped the way it is:
+
+1. **1.9 is not an implausible backtest result. It is a typical one.** A realistic net Sharpe
+   for a retail futures strategy is 0.5–1.0. A search that produces 1.9 out of nothing
+   produces a number *twice as good as anything honest* — so a backtest that looks too good
+   is evidence about the search, not the strategy. This is why the repo treats anything above
+   ~2.0 as a defect report.
+2. **The strategy alone cannot tell you.** Sharpe 1.9 from noise and Sharpe 1.9 from a real
+   edge are identical if all you have is the return series. What distinguishes them is `N` —
+   how many candidates were tried. The Deflated Sharpe Ratio takes `N` as an input and asks
+   whether the best of `N` draws would look this good by chance. At N=200 it rejects; at N=5
+   the *same returns* pass.
+
+That last sentence is the load-bearing test in the suite, and it cuts both ways: the harness
+only works if the trial count is honest. So `N` cannot be a number someone types at the end.
+The planned system makes it a tamper-evident counter incremented as trials run — a ledger of
+run manifests rather than an integer — with the trial budget capped before any fitting
+begins. That ledger is specified in [`PLAN.md`](PLAN.md), not yet built; the harness here
+takes `N` as an argument.
+
+## How the validation pipeline works
+
+```mermaid
+flowchart LR
+    A["returns<br/>+ trial count N"] --> B{deflated_sharpe}
+    A2["price series<br/>+ fill timestamps"] --> C{lookahead_audit}
+    A3["features + labels<br/>+ sample horizon"] --> D{purged_cv}
+    A4["full history"] --> E{walk_forward}
+    B & C & D & E --> F["gate.py<br/>composes verdict"]
+    F --> G["ACCEPT / REJECT<br/>with reason per check"]
+```
+
+Each check is independent, takes its own inputs, and returns `PASS`, `FAIL`, or `SKIP`.
+[`demo/gate.py`](demo/gate.py) composes them into one verdict. Two design decisions carry
+most of the weight:
 
 - **Silence is not consent.** A check missing its inputs returns `SKIP`, never a quiet
   `PASS`. `ACCEPT` requires at least one check to have actually run.
@@ -118,7 +186,7 @@ kills every multi-entry intraday design before a line is written.
 | [`PLAN.md`](PLAN.md) | Phases 0–5 with gates, budgets, and explicit skip lists. |
 | [`docs/constitution.md`](docs/constitution.md) | Standing domain rules §2–§9: instrument, data, broker, risk. |
 | [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Agent tooling — the layered context system used to build this. Not part of the product. |
-| [`docs/`](docs/) | Module designs, observability design, curated research syntheses. |
+| [`docs/`](docs/) | Phase 1 implementation plan, observability design, curated research syntheses, primary-source captures. |
 
 ## Honest framing
 

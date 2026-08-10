@@ -9,11 +9,12 @@ Design: one hue for the honest bars, a reserved warning hue for the inflated one
 baseline reference line, recessive chrome, direct value labels.
 """
 from __future__ import annotations
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
 from purged_cv_demo import kfold_indices, make_leaky_dataset, run_cv
 
 INK, MUTED, GRID, SURFACE = "#1f2933", "#7b8794", "#e4e7eb", "#ffffff"
@@ -36,7 +37,8 @@ def main() -> None:
     colors = [INFLATED, HONEST]
 
     fig, ax = plt.subplots(figsize=(8, 5), dpi=130)
-    fig.patch.set_facecolor(SURFACE); ax.set_facecolor(SURFACE)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
 
     xs = np.arange(len(labels))
     ax.bar(xs, vals, width=0.55, color=colors, edgecolor=SURFACE, linewidth=1.5, zorder=3)
@@ -52,7 +54,7 @@ def main() -> None:
 
     # annotate the leak as the drop from plain to purged
     ax.annotate("", xy=(1, purged), xytext=(1, plain),
-                arrowprops=dict(arrowstyle="<->", color=MUTED, lw=1.3))
+                arrowprops={"arrowstyle": "<->", "color": MUTED, "lw": 1.3})
     ax.text(1.06, (plain + purged) / 2, f"leak\n{plain - purged:+.3f}",
             ha="left", va="center", fontsize=9, color=MUTED)
 
@@ -60,7 +62,8 @@ def main() -> None:
                  fontsize=12.5, color=INK, fontweight="bold", loc="left", pad=12)
     ax.text(0, 1.015, "1-NN on a whisper-of-signal feature; labels overlap 20 bars; folds shuffled",
             transform=ax.transAxes, fontsize=9, color=MUTED)
-    ax.set_xticks(xs); ax.set_xticklabels(labels, fontsize=9.5, color=INK)
+    ax.set_xticks(xs)
+    ax.set_xticklabels(labels, fontsize=9.5, color=INK)
     ax.set_ylabel("cross-validated accuracy", fontsize=10, color=MUTED)
     # bars measure magnitude, so the axis MUST start at zero (a truncated bar axis lies).
     # 0.5 (coin-flip) is the meaningful floor for a binary classifier -- mark it, don't crop to it.
@@ -68,7 +71,8 @@ def main() -> None:
     ax.axhline(0.5, color=MUTED, linewidth=1, linestyle=":", zorder=1)
     ax.text(-0.45, 0.5, "coin flip 0.5", ha="left", va="bottom", fontsize=8, color=MUTED)
 
-    ax.grid(axis="y", color=GRID, linewidth=1, zorder=0); ax.set_axisbelow(True)
+    ax.grid(axis="y", color=GRID, linewidth=1, zorder=0)
+    ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):

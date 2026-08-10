@@ -42,10 +42,10 @@ only when the task needs it, and only the part you need:
 |---|---|
 | Domain facts and their reasoning | `docs/constitution.md` §2–§9 — **grep it**, its header has the index |
 | What's next, what's blocked | `PLAN.md` §2 (phases) |
+| A module's interfaces | `docs/phase1-implementation.md` — the reconciled, buildable Phase 1 plan |
 | Why a decision is what it is | `DECISIONS.md` (append-only; grep, don't read) |
-| A module's interfaces | `docs/phase1-module-designs.md` — *unreconciled, unreviewed: input, not settled design* |
 | Paging/alerting rules | `docs/observability-design.md` §1 |
-| Provenance for a claim | `docs/research/` — 6 curated syntheses. Raw agent output lives in the separate private `signalguard-research` repo. |
+| Provenance for a claim | `docs/research/` — 5 curated syntheses. Raw agent output lives in the separate private `signalguard-research` repo. |
 
 Rules: prefer `Grep`/`Glob` over `Read` on anything in `docs/`; read line ranges, not whole
 files. Cite a number as `file.md:line` instead of restating the table. Don't re-read what's

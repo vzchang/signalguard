@@ -5,6 +5,7 @@ regenerate every chart. Exits non-zero if anything fails, so CI can gate on it.
 Run:  python3 run_all.py
 """
 from __future__ import annotations
+
 import subprocess
 import sys
 from pathlib import Path
@@ -36,8 +37,10 @@ PLOTS = [
 
 
 def run(script: str) -> bool:
+    # check=False is deliberate: a failing script must print [FAIL] and let the run
+    # continue, so one invocation surfaces every failure rather than only the first.
     r = subprocess.run([sys.executable, script], cwd=HERE,
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, check=False)
     ok = r.returncode == 0
     tail = (r.stdout.strip().splitlines() or [""])[-1] if ok else (r.stderr.strip().splitlines() or [""])[-1]
     print(f"  [{'OK  ' if ok else 'FAIL'}] {script:32} {tail[:44]}")
@@ -45,9 +48,14 @@ def run(script: str) -> bool:
 
 
 def main() -> int:
-    print("demos"); demos_ok = all([run(s) for s in DEMOS])
-    print("tests"); tests_ok = all([run(s) for s in TESTS])
-    print("charts"); plots_ok = all([run(s) for s in PLOTS])
+    # all() over a generator would short-circuit and skip the remaining scripts, so the
+    # comprehensions are materialized on purpose: every script runs, every failure prints.
+    print("demos")
+    demos_ok = all([run(s) for s in DEMOS])  # noqa: C419
+    print("tests")
+    tests_ok = all([run(s) for s in TESTS])  # noqa: C419
+    print("charts")
+    plots_ok = all([run(s) for s in PLOTS])  # noqa: C419
     ok = demos_ok and tests_ok and plots_ok
     print()
     print("ALL GREEN" if ok else "FAILURES ABOVE")

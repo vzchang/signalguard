@@ -18,3 +18,25 @@ jobs:
       - name: run all demos, tests, and charts
         run: python3 run_all.py
         working-directory: demo
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+
+  # A pre-commit hook can be bypassed with --no-verify, so the same scan runs here
+  # where it cannot be. See .pre-commit-config.yaml.
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pre-commit
+      - run: pre-commit run --all-files --show-diff-on-failure

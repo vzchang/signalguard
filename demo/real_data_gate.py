@@ -3,7 +3,8 @@ Run the validation gate on REAL market data, not synthetic.
 
 Synthetic demos prove the checks work against a known answer. This proves they behave
 sensibly on real prices -- the harder, more convincing test. Data: 155 years of monthly
-S&P 500 closes (1871-2026), a freely-redistributable public dataset cached at data/sp500.csv
+S&P 500 closes (1871-2026) from Robert Shiller's long-run series, a freely-redistributable
+public dataset cached at data/sp500.csv
 (github.com/datasets/s-and-p-500).
 
 The honest finding, which is more interesting than "reject everything":
@@ -23,12 +24,12 @@ sample size vs trials, and the gate is sensitive to it on real prices, not just 
 numpy-only. Run:  python3 real_data_gate.py
 """
 from __future__ import annotations
+
 import csv
 import math
 from pathlib import Path
 
 import numpy as np
-
 from deflated_sharpe_demo import sharpe_ratio
 from gate import evaluate
 
@@ -37,7 +38,8 @@ MONTHS = 12
 
 
 def load_sp500_returns() -> np.ndarray:
-    rows = list(csv.DictReader(open(DATA)))
+    with open(DATA) as fh:
+        rows = list(csv.DictReader(fh))
     px = np.array([float(r["SP500"]) for r in rows if r["SP500"]])
     return np.diff(px) / px[:-1]  # monthly simple returns
 

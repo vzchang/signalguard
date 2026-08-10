@@ -10,12 +10,13 @@ Design: two categorical hues (cheat vs honest), a flat reference at 1.0, log y s
 curves are legible together, recessive chrome, direct end-labels instead of a legend box.
 """
 from __future__ import annotations
-import numpy as np
+
 import matplotlib
+import numpy as np
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
-from lookahead_detector_demo import make_returns, pnl_same_bar, pnl_next_bar
+from lookahead_detector_demo import make_returns, pnl_next_bar, pnl_same_bar
 
 INK, MUTED, GRID, SURFACE = "#1f2933", "#7b8794", "#e4e7eb", "#ffffff"
 CHEAT = "#c0392b"    # red: the impossible curve
@@ -33,7 +34,8 @@ def main() -> None:
     eq_honest = equity(pnl_next_bar(r))
 
     fig, ax = plt.subplots(figsize=(9, 5), dpi=130)
-    fig.patch.set_facecolor(SURFACE); ax.set_facecolor(SURFACE)
+    fig.patch.set_facecolor(SURFACE)
+    ax.set_facecolor(SURFACE)
 
     x = np.arange(len(eq_honest))
     ax.plot(x, eq_cheat[:len(x)], color=CHEAT, linewidth=2, zorder=3)
@@ -55,7 +57,8 @@ def main() -> None:
     ax.set_xlabel("bar", fontsize=10, color=MUTED)
     ax.set_ylabel("growth of $1 (log)", fontsize=10, color=MUTED)
 
-    ax.grid(color=GRID, linewidth=1, zorder=0); ax.set_axisbelow(True)
+    ax.grid(color=GRID, linewidth=1, zorder=0)
+    ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     for s in ("left", "bottom"):

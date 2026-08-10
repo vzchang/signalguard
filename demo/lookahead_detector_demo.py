@@ -18,7 +18,9 @@ Two independent detectors here, because no single one catches every class:
 Deterministic, numpy-only. Run:  python3 lookahead_detector_demo.py
 """
 from __future__ import annotations
+
 import math
+
 import numpy as np
 
 TRADING_DAYS = 252
@@ -108,7 +110,7 @@ def main() -> None:
 
     print("  DETECTOR B  shuffle test -- effect size vs a destroyed-alignment null")
     hs, hp, hnull = shuffle_test(r, use_cheat=False, rng=np.random.default_rng(7))
-    cs, cp, cnull = shuffle_test(r, use_cheat=True, rng=np.random.default_rng(7))
+    cs, _, cnull = shuffle_test(r, use_cheat=True, rng=np.random.default_rng(7))
     print(f"    honest strategy Sharpe {hs:+6.2f}  vs null mean {hnull:+5.2f}  ->  "
           f"{'inside noise band: NO edge (correct)' if hp >= 0.05 else 'edge'}")
     print(f"    cheat  strategy Sharpe {cs:+6.2f}  vs null mean {cnull:+5.2f}  ->  "

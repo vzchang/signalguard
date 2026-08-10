@@ -18,14 +18,15 @@ applies to every strategy; a check that lacks its inputs reports SKIP, never a f
 numpy-only. Deterministic given seeded inputs.
 """
 from __future__ import annotations
+
 import math
 from dataclasses import dataclass, field
 from enum import Enum
 
 import numpy as np
-
-from deflated_sharpe_demo import deflated_sharpe_ratio, sharpe_ratio
-from lookahead_detector_demo import pnl_same_bar, pnl_next_bar, sharpe as ann_sharpe
+from deflated_sharpe_demo import deflated_sharpe_ratio
+from lookahead_detector_demo import pnl_next_bar, pnl_same_bar
+from lookahead_detector_demo import sharpe as ann_sharpe
 from walk_forward_demo import walk_forward
 
 

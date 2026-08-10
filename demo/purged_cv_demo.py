@@ -24,8 +24,10 @@ truth. No market data, numpy-only, deterministic.
 Run:  python3 purged_cv_demo.py
 """
 from __future__ import annotations
-import numpy as np
+
 from dataclasses import dataclass
+
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -127,7 +129,7 @@ def main() -> None:
     print("=" * 72)
     print(f"  samples: {n}   folds: {k}   label horizon: {label_horizon} bars   embargo: {embargo}")
     print(f"  feature has only a whisper of true signal; labels overlap by {label_horizon} bars")
-    print(f"  folds are SHUFFLED -- the common sin on time series\n")
+    print("  folds are SHUFFLED -- the common sin on time series\n")
     print(f"  majority-class baseline (no skill)     : {base_rate:6.3f}")
     print(f"  plain  shuffled K-Fold accuracy        : {plain:6.3f}   <- inflated by leakage")
     print(f"  purged shuffled K-Fold accuracy        : {purged:6.3f}   <- honest, collapses toward baseline")

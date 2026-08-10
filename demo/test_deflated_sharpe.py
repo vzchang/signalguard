@@ -7,12 +7,16 @@ winner and ACCEPT a genuinely-edged strategy at the same trial count. That singl
 comparison is what proves the gate discriminates rather than blanket-rejecting.
 """
 from __future__ import annotations
-import math
-import numpy as np
 
+import numpy as np
 from deflated_sharpe_demo import (
-    sharpe_ratio, probabilistic_sharpe_ratio, deflated_sharpe_ratio,
-    best_of_n_noise, genuine_edge, _norm_ppf, _norm_cdf,
+    _norm_cdf,
+    _norm_ppf,
+    best_of_n_noise,
+    deflated_sharpe_ratio,
+    genuine_edge,
+    probabilistic_sharpe_ratio,
+    sharpe_ratio,
 )
 
 CUT = 0.95

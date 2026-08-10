@@ -118,8 +118,9 @@ walk-forward efficiency   : +0.18
 ## On real data — 155 years of S&P 500
 
 The synthetic demos prove the checks work against a known answer. `real_data_gate.py` runs
-the gate on **cached monthly S&P 500 closes back to 1871** (`data/sp500.csv`, a freely
-redistributable public dataset) and shows it behaving sensibly on real prices:
+the gate on **cached monthly S&P 500 closes back to 1871** (`data/sp500.csv` — Robert
+Shiller's long-run US equity series, published alongside *Irrational Exuberance* and freely
+redistributable) and shows it behaving sensibly on real prices:
 
 ```
 STRATEGY A  buy-and-hold, full 155y (a priori)
