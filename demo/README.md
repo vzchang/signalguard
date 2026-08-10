@@ -1,4 +1,4 @@
-# QuantDesk demos — a backtest that rejects itself
+# SignalGuard demos — a backtest that rejects itself
 
 Four self-contained demonstrations of the discipline that separates a real edge from an
 artifact. Every one generates synthetic data with a **known** answer (usually zero true
@@ -30,7 +30,7 @@ The four checks are not just concepts; they compose into a single `evaluate(...)
 returns ACCEPT or REJECT with a reason per check. This is the thesis as a tool.
 
 ```
-QuantDesk validation gate
+SignalGuard validation gate
   [FAIL] deflated_sharpe   DSR 0.44 < 0.95  (edge indistinguishable from 200-trial noise)
   [FAIL] lookahead_audit   same-bar/next-bar gap +20.88  (books the bar it traded on)
   [FAIL] purged_cv         purged 0.50 at baseline, leak +0.10  (score was leakage)
@@ -145,7 +145,7 @@ years is enough data to survive the deflation. (`real_data_gate.py`, `test_real_
 Together they are the four ways a backtest lies — selection across trials, leakage across
 folds, lookahead within a bar, and overfitting across time — each demonstrated on data whose
 true edge is zero, so the naive number is provably wrong. They are runnable slices of Phase 1
-of a larger system (QuantDesk) whose organizing principle is: *the first deliverable is a
+of a larger system (SignalGuard) whose organizing principle is: *the first deliverable is a
 harness that can honestly reject a strategy, not a profitable one.*
 
 ## References

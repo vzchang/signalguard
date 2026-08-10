@@ -46,3 +46,9 @@ build/
 *.swp
 .idea/
 .vscode/
+
+# Agent session state and machine-local config.
+# .claude/settings.json, hooks/, and commands/ ARE committed — they are the project's
+# steering and should travel with the repo. Only the local override is machine-specific.
+.claude/settings.local.json
+.remember/

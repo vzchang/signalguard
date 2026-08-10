@@ -1,5 +1,5 @@
 """
-The QuantDesk validation gate: run all four overfitting checks, return one verdict.
+The SignalGuard validation gate: run all four overfitting checks, return one verdict.
 
 This is the thesis of the whole project in one function -- "a harness that can honestly
 reject a strategy." Each of the four demo modules contributes one check; this composes them
@@ -61,7 +61,7 @@ class Verdict:
 
     def render(self) -> str:
         w = max(len(c.name) for c in self.checks)
-        lines = ["QuantDesk validation gate"]
+        lines = ["SignalGuard validation gate"]
         for c in self.checks:
             lines.append(f"  [{c.status.value}] {c.name.ljust(w)}   {c.detail}")
         if self.accepted:

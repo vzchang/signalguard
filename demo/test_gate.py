@@ -60,7 +60,7 @@ def test_lookahead_check_catches_same_bar():
 def test_render_is_stable_text():
     v = scenario_clean_strategy()
     out = v.render()
-    assert "QuantDesk validation gate" in out
+    assert "SignalGuard validation gate" in out
     assert "VERDICT:" in out
 
 

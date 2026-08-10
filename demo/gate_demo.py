@@ -1,5 +1,5 @@
 """
-Run the QuantDesk validation gate on two strategies: one that cheats, one that is clean.
+Run the SignalGuard validation gate on two strategies: one that cheats, one that is clean.
 
 The point of the whole project in one screen: the gate REJECTS a strategy that is an
 overfitting artifact (it fails multiple independent checks) and ACCEPTS one that survives
