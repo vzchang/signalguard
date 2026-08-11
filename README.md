@@ -7,6 +7,11 @@ for the system it belongs to.**
 [![python](https://img.shields.io/badge/python-3.9%20|%203.11%20|%203.12-blue)](requirements.txt)
 [![license](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
 
+```bash
+git clone https://github.com/vzchang/signalguard.git && cd signalguard
+pip install -r requirements.txt && cd harness && python3 gate_demo.py
+```
+
 A backtest that only looks good is the normal outcome of searching, not a rare failure.
 This repo leads with the machinery that kills one.
 
@@ -32,52 +37,6 @@ SignalGuard is the gate that stands between a backtest and belief in it. It take
 strategy's returns and the search that produced them, and returns `ACCEPT`, `REJECT`, or
 `SKIP` with a reason.
 
-## Install
-
-Python 3.9, 3.11, and 3.12 are tested in CI. Core logic and tests need only numpy;
-matplotlib is used solely to regenerate charts.
-
-```bash
-git clone https://github.com/vzchang/signalguard.git
-cd signalguard
-pip install -r requirements.txt
-```
-
-## Run it
-
-```bash
-cd harness && python3 gate_demo.py
-```
-
-Real output from the same gate, on a strategy built to be overfit and on a clean one:
-
-```
-#  Scenario 1: an overfitting artifact (should be REJECTED)
-SignalGuard validation gate
-  [FAIL] deflated_sharpe   DSR 0.44 < 0.95  (edge indistinguishable from 200-trial noise)
-  [FAIL] lookahead_audit   same-bar/next-bar gap +20.88  (books the bar it traded on)
-  [FAIL] purged_cv         purged 0.50 at baseline, leak +0.10  (score was leakage)
-  [FAIL] walk_forward      WFE -0.14 < 0.5  (IS +0.91 -> OOS -0.13, edge did not survive)
-  VERDICT: REJECT (4/4 checks failed)
-
-#  Scenario 2: a clean strategy (should be ACCEPTED)
-SignalGuard validation gate
-  [PASS] deflated_sharpe   DSR 1.00 >= 0.95  (survives 3-trial deflation)
-  [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
-  [PASS] purged_cv         purged 0.62, leak +0.01  (no material leakage)
-  [PASS] walk_forward      WFE 0.72 >= 0.5  (IS +0.74 -> OOS +0.54)
-  VERDICT: ACCEPT (3/3 checks passed)
-```
-
-`python3 run_all.py` runs every demo, all 27 tests, and regenerates every chart in one
-pass. The tests are plain asserts so the suite has no dependency beyond numpy, but they are
-written as `test_*` functions and run under pytest unmodified:
-
-```bash
-cd harness && python3 -m pytest -q      # 27 passed
-ruff check .                         # from the repo root
-```
-
 ## What it catches
 
 Four independent overfitting failure modes, each a self-contained demo with its own tests.
@@ -86,7 +45,7 @@ numpy for the logic, deterministic, no market data or broker required.
 | Check | The failure mode it catches | Result |
 |---|---|---|
 | [`deflated_sharpe.py`](harness/deflated_sharpe.py) | Selection bias from searching many strategies | Best-of-200 noise "finds" 1.9 Sharpe → **rejected**, while a real edge still passes |
-| [`purged_cv.py`](harness/purged_cv.py) | Label leakage across overlapping samples | Shuffled k-fold reads 0.60 accuracy → purge + embargo collapses it to the honest **0.50** |
+| [`purged_cv.py`](harness/purged_cv.py) | Label leakage across overlapping samples | Shuffled k-fold reads 0.600 → purge + embargo collapses it to **0.504**, coin-flip, and below the 0.586 majority-class rate |
 | [`lookahead_detector.py`](harness/lookahead_detector.py) | Filling on the bar you decided from | A same-bar peek prints **+20 Sharpe from zero edge**; two detectors catch it |
 | [`walk_forward.py`](harness/walk_forward.py) | In-sample fit that doesn't survive | IS +0.87 → OOS +0.16, **walk-forward efficiency 0.18** |
 
@@ -143,16 +102,191 @@ One test pairs the two directions: the same noise strategy is **rejected at its 
 count (N=200) and accepted at an understated one (N=5)**. That covers both the harness
 working and the reason the trial counter has to be tamper-evident.
 
-## Delivered vs. planned
+## Reproducing the results
 
-| | Status |
+Python 3.9, 3.11, and 3.12 are tested in CI. Core logic and tests need only numpy;
+matplotlib is used solely to regenerate charts.
+
+```bash
+git clone https://github.com/vzchang/signalguard.git && cd signalguard
+pip install -r requirements.txt
+cd harness
+
+python3 gate_demo.py        # the composed gate: one REJECT, one ACCEPT
+python3 real_data_gate.py   # the same gate on 155 years of S&P 500 returns
+python3 run_all.py          # every demo, all 27 tests, all 4 charts
+```
+
+Every experiment is seeded, so the numbers in this README reproduce exactly. `run_all.py`
+is the single command that reproduces all of it and exits non-zero if any part fails; it is
+what CI runs on three Python versions.
+
+Real output from the composed gate, on a strategy built to be overfit and on a clean one:
+
+```
+#  Scenario 1: an overfitting artifact (should be REJECTED)
+SignalGuard validation gate
+  [FAIL] deflated_sharpe   DSR 0.44 < 0.95  (edge indistinguishable from 200-trial noise)
+  [FAIL] lookahead_audit   same-bar/next-bar gap +20.88  (books the bar it traded on)
+  [FAIL] purged_cv         purged 0.50 at baseline, leak +0.10  (score was leakage)
+  [FAIL] walk_forward      WFE -0.14 < 0.5  (IS +0.91 -> OOS -0.13, edge did not survive)
+  VERDICT: REJECT (4/4 checks failed)
+
+#  Scenario 2: a clean strategy (should be ACCEPTED)
+SignalGuard validation gate
+  [PASS] deflated_sharpe   DSR 1.00 >= 0.95  (survives 3-trial deflation)
+  [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
+  [PASS] purged_cv         purged 0.62, leak +0.01  (no material leakage)
+  [PASS] walk_forward      WFE 0.72 >= 0.5  (IS +0.74 -> OOS +0.54)
+  VERDICT: ACCEPT (3/3 checks passed)
+```
+
+### On real data: 155 years of S&P 500
+
+The synthetic demos are built so the right answer is known in advance. The same gate also
+runs against 1,866 monthly S&P 500 returns from 1871 to 2026
+([`real_data_gate.py`](harness/real_data_gate.py), Robert Shiller's long-run series, a
+freely redistributable public dataset cached at
+[`harness/data/sp500.csv`](harness/data/sp500.csv)). Here it has to separate a real risk
+premium from a small-sample artifact:
+
+```
+STRATEGY A  buy-and-hold, full 155y (a priori, 1 'trial')
+  annualized Sharpe +0.41
+  [PASS] deflated_sharpe   PSR 1.00 (N=1, a priori: no selection to deflate) >= 0.95
+  [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
+  [SKIP] purged_cv         no cross-validation scores supplied
+  [PASS] walk_forward      WFE 0.76 >= 0.5  (IS +2.15 -> OOS +1.64)
+  VERDICT: ACCEPT (2/2 checks passed)
+
+STRATEGY B  best of 153 MA combos on a SHORT 72-month window (overfit trap)
+  winner annualized Sharpe +2.02  <- looks great
+  [FAIL] deflated_sharpe   DSR 0.91 < 0.95  (edge indistinguishable from 153-trial noise)
+  [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
+  [SKIP] purged_cv         no cross-validation scores supplied
+  [FAIL] walk_forward      WFE 0.21 < 0.5  (IS +9.86 -> OOS +2.11, edge did not survive)
+  VERDICT: REJECT (2/2 checks failed)
+```
+
+**The gate accepts the lower Sharpe and rejects the higher one.** +0.41 earned a priori over
+155 years survives; +2.02 selected from 153 combinations over 6 years does not. A validator
+that rejected everything would be useless, and one that ranked by Sharpe would get this
+exactly backwards. Running the same 153-combination search over the full 155 years is *not*
+flagged, because at that sample size the premium survives the deflation. That is the whole
+thesis in one contrast: overfitting is a relationship between trial count and sample size,
+not a property of a number.
+
+## Limitations
+
+What this harness can establish is narrower than "the strategy is good," and the gaps are
+worth stating precisely:
+
+- **The trial count is an input, not a measurement.** `N` is passed to the gate. Nothing in
+  the harness can detect an understated `N`, which is the single easiest way to defeat it.
+  The tamper-evident trial ledger that would fix this is designed, not built.
+- **Multiple testing is corrected only for the trials you declare.** Preprocessing choices,
+  abandoned hypotheses, and prior published work on the same dataset are all researcher
+  degrees of freedom that never enter `N`.
+- **The Deflated Sharpe Ratio assumes independent trials** and requires the variance across
+  trial Sharpes as an input. A parameter sweep within one strategy family produces highly
+  correlated trials, which violates the assumption and makes the haircut too generous.
+- **The thresholds are conventions, not derived optima.** DSR ≥ 0.95, WFE ≥ 0.5, and the
+  0.03 leak margin are chosen cutoffs. They are defensible and they are not laws.
+- **An `ACCEPT` can rest on fewer than four checks.** `SKIP` is never silently upgraded to
+  `PASS`, but the verdict above passes on two of four, because no price series or CV scores
+  were supplied. The count is always printed for exactly this reason.
+- **The gate validates a return series, not a trading system.** Transaction costs, slippage,
+  capacity, and borrow are not modeled inside it. Costs enter this project as a constraint
+  on strategy shape, not as a term in the validator.
+- **Passing on history is not a forecast.** Walk-forward measures decay *within* the sample.
+  Regime change after the sample is outside what any of these checks can see, and the S&P
+  index series embeds its own reconstitution and survivorship.
+
+What it *does* establish is the useful negative: that a given result is or is not
+distinguishable from what the same search would have produced on noise.
+
+## Engineering quality
+
+The tests are plain asserts, so the suite has no dependency beyond numpy, but they are
+written as `test_*` functions and run under pytest unmodified:
+
+```bash
+cd harness && python3 -m pytest -q      # 27 passed
+ruff check .                            # from the repo root
+mypy --ignore-missing-imports .         # from harness/
+```
+
+[CI](.github/workflows/ci.yml) runs three jobs on every push and pull request:
+
+| Job | What it does |
 |---|---|
-| Validation harness, 4 checks, 1 composing gate, 27 tests, CI on 3 Python versions | ✅ **done, runnable** |
-| Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
-| The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
+| `harness-suite` | `run_all.py` on Python 3.9, 3.11, and 3.12 |
+| `lint` | `ruff check` across the repo, `mypy` over the harness |
+| `secret-scan` | `pre-commit run --all-files` on a fresh checkout |
 
-The ordering is deliberate: the harness that can reject a strategy comes before any
-strategy. Phase plans and the domain constitution are kept private and ship as they land.
+[`.pre-commit-config.yaml`](.pre-commit-config.yaml) runs gitleaks, detect-secrets against a
+committed baseline, private-key detection, and a large-file cap. **The same secret scan runs
+in CI as well, deliberately**, because a pre-commit hook can be skipped with `--no-verify`
+and a CI job cannot.
+
+## Agent-assisted development
+
+This repository is developed with agent assistance, under a deterministic control layer
+committed alongside the code. The methodology and every result above are mine. The control
+layer exists because model judgment is not a guarantee, so the guarantees live in
+configuration, hooks, and CI, where they hold whether or not anyone remembers them.
+
+```
+prompt
+  -> .claude/hooks/route.sh   deterministic routing, at most 3 lines injected
+  -> /qd                      compiles a falsifiable gate, stops for human approval
+  -> pre-commit               secret scan, private keys, large files
+  -> CI                       harness suite on 3.9/3.11/3.12, ruff, mypy, secret scan
+  -> verified change
+```
+
+The last two layers do not trust the ones above them, which is the point.
+
+| File | Guarantee |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Instructions loaded every session: the operating protocol, six prime directives, thirteen domain facts that cannot be silently contradicted |
+| [`.claude/hooks/route.sh`](.claude/hooks/route.sh) | Prompt-to-workflow routing, fired before the model sees the prompt |
+| [`.claude/commands/qd.md`](.claude/commands/qd.md) | Task gating: compiles a rough ask into a falsifiable `Done when:`, then stops for approval |
+| [`.claude/settings.json`](.claude/settings.json) | Least-privilege tool permissions and an explicit deny list |
+| [`DECISIONS.md`](DECISIONS.md) | The append-only record of what was decided, and what was overturned |
+
+**Bounded tool surface.** The agent gets the capabilities local development requires;
+sensitive paths and every remote git operation are denied, so publishing stays manual.
+
+```jsonc
+// excerpt from .claude/settings.json
+"allow": ["Bash(python3 -m pytest:*)", "Bash(git diff:*)", "Bash(rg:*)"],
+"deny":  ["Read(./private/**)", "Read(./.env*)", "Read(./secrets/**)", "Bash(git push:*)"]
+```
+
+**Why routing is a hook and not a table.** A table in an instruction file is a suggestion
+that depends on the model noticing it. A `UserPromptSubmit` hook runs first, every time. The
+implementation carries three fixes, each from an observed miss:
+
+- **Word boundaries, not substrings.** `*fail*` matched "prove the failure path", a phrase in
+  a large share of the legitimate prompts here, so it fired constantly and got ignored.
+- **Collect every match, then rank.** A `case` statement stops at the first match, so "the
+  chart is broken" reached debugging and never reached the visualization route.
+- **Intent, not vocabulary.** The subject pattern `are the tests…` missed the far more common
+  `are all the tests…`, dropping verification on a routine completion claim. Widening a
+  pattern is also how a router starts firing on everything, so the fix shipped with its
+  opposite case in the battery.
+
+Output is capped at three lines, an explicit request for a skill preempts everything, and the
+speculative fallback is deduplicated per session and topic. Actual behavior, reproducible
+with the battery in [`docs/PROMPTING.md`](docs/PROMPTING.md):
+
+| Prompt | Routed to |
+|---|---|
+| `prove the failure path for the sizer` | test-driven development only, **not** debugging |
+| `the chart is broken, why is the axis wrong` | debugging **and** dataviz, both |
+| `are all the tests passing?` | verification before completion |
+| `next unblocked Phase 1 item` | nothing, silent |
 
 ## The engineering record
 
@@ -177,13 +311,25 @@ the trial budget is capped before looking.
 10%-of-equity annual cost ceiling permits ~275 round turns/year ≈ 1.09 per trading day. That
 kills every multi-entry intraday design before a line is written.
 
+## Delivered vs. planned
+
+| | Status |
+|---|---|
+| Validation harness, 4 checks, 1 composing gate, 27 tests, CI on 3 Python versions | ✅ **done, runnable** |
+| Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
+| The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
+
+The ordering is deliberate: the harness that can reject a strategy comes before any
+strategy. Phase plans and the domain constitution are kept private and ship as they land.
+
 ## Repo map
 
 | Path | What it is |
 |---|---|
 | [`harness/`](harness/) | The validation harness. 18 Python files, 27 tests, 4 charts. |
 | [`DECISIONS.md`](DECISIONS.md) | Append-only decision log. The reasoning record. |
-| [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Agent tooling, the layered context system used to build this. Not part of the product. |
+| [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
+| [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Repository-level agent instructions and how the project is driven. Not part of the product. |
 | [`docs/`](docs/) | A writeup of the harness, and how the project is driven with Claude Code. |
 
 ## What the arithmetic supports

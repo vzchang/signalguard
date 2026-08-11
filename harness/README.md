@@ -70,7 +70,7 @@ DSR discriminates, it rejects the noise winner and still passes a real edge.
 ## 2. Purged K-Fold, removing the leak that inflates cross-validation
 
 Financial labels span time. If a label is a forward return over the next *h* bars, training
-samples next to a test fold share information with it. **Shuffled** k-fold, the common sin ,
+samples next to a test fold share information with it. **Shuffled** k-fold, the common sin,
 scatters a test point's time-neighbors into training, and their overlapping labels leak
 straight in. **Purge + embargo** drops the overlapping neighbors and restores the truth.
 

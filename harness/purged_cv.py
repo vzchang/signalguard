@@ -134,7 +134,7 @@ def main() -> None:
     print("  folds are SHUFFLED, the common sin on time series\n")
     print(f"  majority-class baseline (no skill)     : {base_rate:6.3f}")
     print(f"  plain  shuffled K-Fold accuracy        : {plain:6.3f}   <- inflated by leakage")
-    print(f"  purged shuffled K-Fold accuracy        : {purged:6.3f}   <- honest, collapses toward baseline")
+    print(f"  purged shuffled K-Fold accuracy        : {purged:6.3f}   <- honest, collapses to coin-flip")
     print(f"  leak (plain - purged)                  : {plain - purged:+6.3f}")
     print()
     print("  Takeaway: the un-purged score looks skillful; purging shows most of that")
