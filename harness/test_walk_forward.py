@@ -39,6 +39,25 @@ def test_THE_GATE_oos_collapses_below_is() -> None:
     assert oos_m < is_m, "OOS must not exceed IS on a zero-edge series"
 
 
+def test_losing_strategy_is_not_rescued_by_the_wfe_ratio() -> None:
+    """
+    Negative in-sample AND negative out-of-sample must FAIL. Their ratio is positive
+    (here IS -11.35, OOS -11.81, WFE 1.04), so an unguarded WFE reads a strategy that
+    lost money in both windows as its healthiest possible result.
+    """
+    from gate import Status, check_walk_forward
+
+    # negative lag-2 autocorrelation: the momentum rule compares sign(r[i-1]) against
+    # r[i+1], so this is structurally wrong for it and no grid choice escapes
+    rng = np.random.default_rng(3)
+    r = np.zeros(1600)
+    for i in range(2, len(r)):
+        r[i] = -0.7 * r[i - 2] + rng.normal(0, 0.01)
+
+    res = check_walk_forward(r, 8, (1, 2))
+    assert res.status is Status.FAIL, f"losing strategy must FAIL, got {res.status}: {res.detail}"
+
+
 def _run_all() -> None:
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for fn in fns:

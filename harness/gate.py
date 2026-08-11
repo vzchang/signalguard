@@ -148,7 +148,12 @@ def check_walk_forward(returns_series: np.ndarray | None, n_splits: int,
     rows = walk_forward(np.asarray(returns_series), n_splits=n_splits, grid=grid)
     is_m = float(np.mean([x[1] for x in rows]))
     oos_m = float(np.mean([x[2] for x in rows]))
-    wfe = oos_m / is_m if is_m != 0 else 0.0
+    # two negatives divide into a healthy-looking ratio, so a strategy that lost money in
+    # and out of sample would otherwise pass on arithmetic alone
+    if is_m <= 0:
+        return CheckResult("walk_forward", Status.FAIL,
+                           f"no in-sample edge to carry forward (IS {is_m:+.2f} -> OOS {oos_m:+.2f})")
+    wfe = oos_m / is_m
     if wfe >= min_wfe:
         return CheckResult("walk_forward", Status.PASS,
                            f"WFE {wfe:.2f} >= {min_wfe}  (IS {is_m:+.2f} -> OOS {oos_m:+.2f})")
