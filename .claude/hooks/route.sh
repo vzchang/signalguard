@@ -47,7 +47,7 @@ if m '\b(broken|traceback|stack ?trace|exception|regression|crashe?[sd]?|hangs?)
 fi
 
 # --- 3. A completion claim is about to be made ---
-if m '\b(is|are) (it|we|this|they|the tests?) (all )?(done|passing|working|ready|finished|complete)\b|\ball tests? pass|\bready to (ship|merge|commit|push)\b|\bdid it work\b|\bconfirm (it|that|this)\b|\bverify\b'; then
+if m '\b(is|are) (all )?(it|we|this|they|the tests?) (all )?(done|passing|working|ready|finished|complete)\b|\ball (the )?tests? pass|\bready to (ship|merge|commit|push)\b|\bdid it work\b|\bconfirm (it|that|this)\b|\bverify\b'; then
   add "[SKILL REQUIRED] Invoke Skill(superpowers:verification-before-completion) before continuing. Run the command, paste the output, then claim."
 fi
 

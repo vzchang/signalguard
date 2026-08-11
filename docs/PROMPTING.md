@@ -14,7 +14,7 @@ lazy one. These four layers are ordered by how little they depend on you remembe
 |---|---|---|---|
 | **1. Always-loaded rules** | `CLAUDE.md` (~170 lines, ~2.5k tok) | every session | The protocol, the 6 directives, and 13 facts that can't be silently contradicted |
 | **2. Prompt compilation** | `CLAUDE.md` §0, "Compile the request before acting" | ~40 tok/task | Every ask becomes Task / Phase / **Done when** / Riskiest before any work starts |
-| **3. Deterministic routing** | `.claude/hooks/route.sh` | 0 to 60 tok/turn | 10 skill routes fire on your prompt text, whether or not the model was going to reach for them |
+| **3. Deterministic routing** | `.claude/hooks/route.sh` | 0 to 60 tok/turn | Nine routes fire on your prompt text, whether or not the model was going to reach for them |
 | **4. On-demand facts** | the domain constitution, grepped, kept private | 0 unless needed | The arithmetic behind every rule, without paying for it every session |
 
 Layer 3 is the one that matters most and the one people skip. A routing *table* in a
@@ -87,9 +87,8 @@ It is silent on most turns.
 | `except`, fallback, retry, "defaults to" | `silent-failure-hunter` |
 | chart, plot, axis, palette, heatmap | `dataviz`, before the first line of chart code |
 | "use MNQ instead", "reconsider the broker" | The instrument decision is closed to preference, open to arithmetic |
-| "read the research and summarize" | 1.7 MB / 51 files, grep it |
-| non-display, licensing, Section 1256, CPA | Phase 0: produce the artifact, not the answer |
-| "commit" | `commit-commands:commit` + the §1.6 reminder |
+| "read the research and summarize" | the archive is large and private, grep it |
+| "is there a skill for X", "find a skill to…" | `find-skills`, printed first so an explicit ask is never cut by the cap |
 
 Two bugs from the first version are worth knowing about, because they are the failure mode
 of every naive routing hook: it matched bare substrings, so `*fail*` fired on the phrase
@@ -235,8 +234,13 @@ t(){ printf '%s\n' "--- $1"; python3 -c "import json,sys;print(json.dumps({'prom
 t "prove the failure path for the sizer"        # TDD only, NOT debugging
 t "download the databento history"              # context7 only, NOT verification
 t "the chart is broken, why is the axis wrong"  # debugging AND dataviz, both
+t "are all the tests passing?"                  # verification
+t "are all the files ready to read"             # silent, the guard against the above
 t "next unblocked Phase 1 item"                 # silent
 ```
 
-The first two are the v1 false positives; the third is the v1 false negative. If any of
-them changes behavior, the routing regexes have drifted.
+The first two are the v1 false positives; the third is the v1 false negative. The fourth is
+a later miss: the subject regex required `are the tests…` and so skipped the far more common
+`are all the tests…`. The fifth exists because widening that pattern is exactly how a router
+starts firing on everything. If any of them changes behavior, the routing regexes have
+drifted.
