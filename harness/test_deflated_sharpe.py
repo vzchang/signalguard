@@ -73,6 +73,24 @@ def test_THE_GATE_rejects_noise_accepts_edge() -> None:
     assert dsr_edge >= CUT, f"DSR must ACCEPT the real edge, got {dsr_edge:.3f}"
 
 
+def test_THE_GATE_understated_trial_count_flips_the_verdict() -> None:
+    """
+    Same noise winner, two declared trial counts: rejected at the true N=200, accepted at
+    an understated N=3. This is why the trial counter has to be tamper-evident, the only
+    thing standing between a losing series and a passing grade is an honest N.
+    """
+    rng = np.random.default_rng(20260806)
+    n_obs, n_trials = 504, 200
+
+    noise, _, var_sr = best_of_n_noise(n_trials, n_obs, rng)
+
+    dsr_true = deflated_sharpe_ratio(noise, n_trials, var_sr)
+    dsr_understated = deflated_sharpe_ratio(noise, 3, var_sr)
+
+    assert dsr_true < CUT, f"DSR must REJECT at the true N=200, got {dsr_true:.3f}"
+    assert dsr_understated >= CUT, f"DSR must ACCEPT at an understated N=3, got {dsr_understated:.3f}"
+
+
 def _run_all() -> None:
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     passed = 0

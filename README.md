@@ -99,7 +99,7 @@ most of the weight:
   evidence against the strategy, not absence of evidence.
 
 One test pairs the two directions: the same noise strategy is **rejected at its true trial
-count (N=200) and accepted at an understated one (N=5)**. That covers both the harness
+count (N=200) and accepted at an understated one (N=3)**. That covers both the harness
 working and the reason the trial counter has to be tamper-evident.
 
 ## Reproducing the results
@@ -146,7 +146,7 @@ SignalGuard validation gate
 The synthetic demos are built so the right answer is known in advance. The same gate also
 runs against 1,866 monthly S&P 500 returns from 1871 to 2026
 ([`real_data_gate.py`](harness/real_data_gate.py), Robert Shiller's long-run series, a
-freely redistributable public dataset cached at
+publicly available dataset (attribution expected) cached at
 [`harness/data/sp500.csv`](harness/data/sp500.csv)). Here it has to separate a real risk
 premium from a small-sample artifact:
 
@@ -303,11 +303,14 @@ interface; backtest and live differ only by which `DataFeed`, `ExecutionHandler`
 are injected. Divergent codebases drift and then lie to you.
 
 **2. Realistic net Sharpe is 0.5 to 1.0. Anything above ~2.0 backtested is a bug report.**
-On a 4-year window the noise ceiling for even a small honest search is ~0.90 to 1.22, *above*
-the entire realistic target band. So validation runs on the longest available history, and
+On a 4-year window the noise ceiling for even a small honest search is ~0.90 to 1.22 (an
+inference from private research, not computed here; the in-repo demo reports a 1.91 winner
+over 200 trials on 2 years), *above* the entire realistic target band. So validation runs on the longest available history, and
 the trial budget is capped before looking.
 
-**3. Costs are a hard constraint on strategy shape.** At $2.90 all-in per round turn, a
+**3. Costs are a hard constraint on strategy shape.** *(The figures in this section are
+domain inferences carried in from private research, not outputs of the code in this repo.)*
+At $2.90 all-in per round turn, a
 10%-of-equity annual cost ceiling permits ~275 round turns/year ≈ 1.09 per trading day. That
 kills every multi-entry intraday design before a line is written.
 
@@ -334,7 +337,8 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 
 ## What the arithmetic supports
 
-A genuine Sharpe of 0.5 is simultaneously a realistic target and a weak signal. On a $10k
+A genuine Sharpe of 0.5 is simultaneously a realistic target and a weak signal. The figures
+in this paragraph are arithmetic on assumed inputs, not outputs of this repo. On a $10k
 account it works out to roughly **+$700/yr against a ~$2,400 (30%) drawdown**, and separating
 a true 0.5 from zero takes on the order of **15 years of data**. No live result inside a year
 distinguishes skill from luck at that sample size, which is the whole reason the first

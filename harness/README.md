@@ -9,7 +9,7 @@ broker, no scipy, the standard-normal CDF and its inverse are implemented from s
 Each demo has a `test_*.py` (plain asserts, run directly) whose headline test encodes the point.
 
 ```bash
-cd demo
+cd harness
 python3 run_all.py                 # every demo + every test + every chart; exits nonzero on any failure
 ```
 
@@ -119,8 +119,8 @@ walk-forward efficiency   : +0.18
 
 The synthetic demos prove the checks work against a known answer. `real_data_gate.py` runs
 the gate on **cached monthly S&P 500 closes back to 1871** (`data/sp500.csv`, Robert
-Shiller's long-run US equity series, published alongside *Irrational Exuberance* and freely
-redistributable) and shows it behaving sensibly on real prices:
+Shiller's long-run US equity series, published alongside *Irrational Exuberance*,
+publicly available with attribution expected) and shows it behaving sensibly on real prices:
 
 ```
 STRATEGY A  buy-and-hold, full 155y (a priori)

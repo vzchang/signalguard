@@ -10,10 +10,10 @@ The classic retail leak is the same-bar fill: a signal computed from bar t's CLO
 once the bar is over. The honest version fills at bar t+1's OPEN.
 
 Two independent detectors here, because no single one catches every class:
-  1. Timestamp-shift test, re-run the strategy with the price series shifted so that
-     decision-time information is genuinely unavailable; a leaking strategy's edge collapses.
-  2. Fill-timing audit, compare same-bar-close fills vs next-bar-open fills on identical
-     signals; a large, systematically favorable gap is the signature of the peek.
+  1. Fill-timing audit (`fill_timing_audit`), compare same-bar-close fills vs next-bar-open
+     fills on identical signals; a large, systematically favorable gap is the signature.
+  2. Shuffle test (`shuffle_test`), re-run against shuffled returns so decision-time
+     information is genuinely unavailable; a leaking strategy's edge collapses.
 
 Deterministic, numpy-only. Run:  python3 lookahead_detector.py
 """
