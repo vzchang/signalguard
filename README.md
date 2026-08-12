@@ -238,6 +238,63 @@ committed baseline, private-key detection, and a large-file cap. **The same secr
 in CI as well, deliberately**, because a pre-commit hook can be skipped with `--no-verify`
 and a CI job cannot.
 
+## The engineering record
+
+[`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
+rejected, curated down to the seven calls that still stand. **Five decisions in it were
+overturned by adversarial review**, including the original instrument choice, after the
+arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that
+overturned them are kept in full, because the reasoning that changed a decision outlasts
+the decision.
+
+## Three things that govern the design
+
+**1. One code path for backtest and live.** The strategy consumes an abstract event
+interface; backtest and live differ only by which `DataFeed`, `ExecutionHandler`, and `Clock`
+are injected. Divergent codebases drift and then lie to you.
+
+**2. Realistic net Sharpe is 0.5 to 1.0. Anything above ~2.0 backtested is a bug report.**
+On a 4-year window the noise ceiling for even a small honest search is ~0.90 to 1.22,
+*above* the entire realistic target band. So validation runs on the longest available
+history, and the trial budget is capped before looking. (That ceiling is an inference from
+private research, not computed here; the in-repo demo reports a 1.91 winner over 200 trials
+on 2 years.)
+
+**3. Costs are a hard constraint on strategy shape.** At $2.90 all-in per round turn, a
+10%-of-equity annual cost ceiling permits ~275 round turns/year ≈ 1.09 per trading day. That
+kills every multi-entry intraday design before a line is written. (These figures are domain
+inferences carried in from private research, not outputs of the code here.)
+
+## Delivered vs. planned
+
+| | Status |
+|---|---|
+| Validation harness, 4 checks, 1 composing gate, 29 tests, CI on 3 Python versions | ✅ **done, runnable** |
+| Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
+| The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
+
+The ordering is deliberate: the harness that can reject a strategy comes before any
+strategy. Phase plans and the domain constitution are kept private and ship as they land.
+
+## Repo map
+
+| Path | What it is |
+|---|---|
+| [`harness/`](harness/) | The validation harness. 18 Python files, 29 tests, 4 charts. |
+| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: seven decisions, five of them overturned by audit. |
+| [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
+| [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Repository-level agent instructions and how the project is driven. Not part of the product. |
+| [`docs/`](docs/) | A writeup of the harness, and how the project is driven with Claude Code. |
+
+## What the arithmetic supports
+
+A genuine Sharpe of 0.5 is simultaneously a realistic target and a weak signal. The figures
+in this paragraph are arithmetic on assumed inputs, not outputs of this repo. On a $10k
+account it works out to roughly **+$700/yr against a ~$2,400 (30%) drawdown**, and separating
+a true 0.5 from zero takes on the order of **15 years of data**. No live result inside a year
+distinguishes skill from luck at that sample size, which is the whole reason the first
+deliverable is a harness that can reject a strategy rather than a strategy.
+
 ## Agent-assisted development
 
 This repository is developed with agent assistance, under a deterministic control layer
@@ -296,63 +353,6 @@ with the battery in [`docs/PROMPTING.md`](docs/PROMPTING.md):
 | `the chart is broken, why is the axis wrong` | debugging **and** dataviz, both |
 | `are all the tests passing?` | verification before completion |
 | `next unblocked Phase 1 item` | nothing, silent |
-
-## The engineering record
-
-[`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
-rejected, curated down to the seven calls that still stand. **Five decisions in it were
-overturned by adversarial review**, including the original instrument choice, after the
-arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that
-overturned them are kept in full, because the reasoning that changed a decision outlasts
-the decision.
-
-## Three things that govern the design
-
-**1. One code path for backtest and live.** The strategy consumes an abstract event
-interface; backtest and live differ only by which `DataFeed`, `ExecutionHandler`, and `Clock`
-are injected. Divergent codebases drift and then lie to you.
-
-**2. Realistic net Sharpe is 0.5 to 1.0. Anything above ~2.0 backtested is a bug report.**
-On a 4-year window the noise ceiling for even a small honest search is ~0.90 to 1.22,
-*above* the entire realistic target band. So validation runs on the longest available
-history, and the trial budget is capped before looking. (That ceiling is an inference from
-private research, not computed here; the in-repo demo reports a 1.91 winner over 200 trials
-on 2 years.)
-
-**3. Costs are a hard constraint on strategy shape.** At $2.90 all-in per round turn, a
-10%-of-equity annual cost ceiling permits ~275 round turns/year ≈ 1.09 per trading day. That
-kills every multi-entry intraday design before a line is written. (These figures are domain
-inferences carried in from private research, not outputs of the code here.)
-
-## Delivered vs. planned
-
-| | Status |
-|---|---|
-| Validation harness, 4 checks, 1 composing gate, 29 tests, CI on 3 Python versions | ✅ **done, runnable** |
-| Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
-| The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
-
-The ordering is deliberate: the harness that can reject a strategy comes before any
-strategy. Phase plans and the domain constitution are kept private and ship as they land.
-
-## Repo map
-
-| Path | What it is |
-|---|---|
-| [`harness/`](harness/) | The validation harness. 18 Python files, 29 tests, 4 charts. |
-| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: seven decisions, five of them overturned by audit. |
-| [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
-| [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Repository-level agent instructions and how the project is driven. Not part of the product. |
-| [`docs/`](docs/) | A writeup of the harness, and how the project is driven with Claude Code. |
-
-## What the arithmetic supports
-
-A genuine Sharpe of 0.5 is simultaneously a realistic target and a weak signal. The figures
-in this paragraph are arithmetic on assumed inputs, not outputs of this repo. On a $10k
-account it works out to roughly **+$700/yr against a ~$2,400 (30%) drawdown**, and separating
-a true 0.5 from zero takes on the order of **15 years of data**. No live result inside a year
-distinguishes skill from luck at that sample size, which is the whole reason the first
-deliverable is a harness that can reject a strategy rather than a strategy.
 
 ## License
 
