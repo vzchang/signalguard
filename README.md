@@ -283,8 +283,8 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 | [`harness/`](harness/) | The validation harness. 18 Python files, 29 tests, 4 charts. |
 | [`DECISIONS.md`](DECISIONS.md) | The reasoning record: seven decisions, five of them overturned by audit. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
-| [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Repository-level agent instructions and how the project is driven. Not part of the product. |
-| [`docs/`](docs/) | A writeup of the harness, and how the project is driven with Claude Code. |
+| [`CLAUDE.md`](CLAUDE.md) | Repository-level agent instructions, loaded every session. Not part of the product. |
+| [`docs/`](docs/) | A writeup of the harness, and [`PROMPTING.md`](docs/PROMPTING.md) on how the project is driven. |
 
 ## What the arithmetic supports
 
