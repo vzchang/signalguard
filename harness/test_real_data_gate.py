@@ -3,7 +3,7 @@ Tests for the real-data gate (plain-assert, no pytest).
 
 Headline: on cached real S&P 500 data, buy-and-hold over the full 155 years is ACCEPTED and
 the best-of-many MA search on a short window is REJECTED. Proves the gate discriminates on
-real prices, not just synthetic. Requires demo/data/sp500.csv to be present.
+real prices, not just synthetic. Requires harness/data/sp500.csv to be present.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from real_data_gate import DATA, load_sp500_returns, ma_crossover_search
 
 
 def test_data_file_present_and_sane() -> None:
-    assert DATA.exists(), "demo/data/sp500.csv must be committed for offline runs"
+    assert DATA.exists(), "harness/data/sp500.csv must be committed for offline runs"
     r = load_sp500_returns()
     assert len(r) > 1500, f"expected 150+ years of monthly data, got {len(r)}"
     assert 0.05 < r.std(ddof=1) * math.sqrt(12) < 0.30, "annualized vol should be equity-like"

@@ -114,7 +114,7 @@ cd harness
 
 python3 gate_demo.py        # the composed gate: one REJECT, one ACCEPT
 python3 real_data_gate.py   # the same gate on 155 years of S&P 500 returns
-python3 run_all.py          # every demo, all 27 tests, all 4 charts
+python3 run_all.py          # every demo, all 29 tests, all 4 charts
 ```
 
 Every experiment is seeded, so the numbers in this README reproduce exactly. `run_all.py`
@@ -166,13 +166,22 @@ STRATEGY B  best of 153 MA combos on a SHORT 72-month window (overfit trap)
   [SKIP] purged_cv         no cross-validation scores supplied
   [FAIL] walk_forward      WFE 0.21 < 0.5  (IS +9.86 -> OOS +2.11, edge did not survive)
   VERDICT: REJECT (2/2 checks failed)
+
+STRATEGY C  best of 153 MA combos on the FULL 155y sample (control)
+  winner annualized Sharpe +0.68
+  [PASS] deflated_sharpe   DSR 1.00 >= 0.95  (survives 153-trial deflation)
+  [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
+  [SKIP] purged_cv         no cross-validation scores supplied
+  [PASS] walk_forward      WFE 0.76 >= 0.5  (IS +2.15 -> OOS +1.64)
+  VERDICT: ACCEPT (2/2 checks passed)
 ```
 
 **The gate accepts the lower Sharpe and rejects the higher one.** +0.41 earned a priori over
 155 years survives; +2.02 selected from 153 combinations over 6 years does not. A validator
 that rejected everything would be useless, and one that ranked by Sharpe would get this
-exactly backwards. Running the same 153-combination search over the full 155 years is *not*
-flagged, because at that sample size the premium survives the deflation. That is the whole
+exactly backwards. Strategy C is the control: the same 153-combination search over the full 155
+years is *not* flagged, because at that sample size the premium survives the deflation.
+Without it the gate could be rejecting on trial count alone. That is the whole
 thesis in one contrast: overfitting is a relationship between trial count and sample size,
 not a property of a number.
 
@@ -211,7 +220,7 @@ The tests are plain asserts, so the suite has no dependency beyond numpy, but th
 written as `test_*` functions and run under pytest unmodified:
 
 ```bash
-cd harness && python3 -m pytest -q      # 27 passed
+cd harness && python3 -m pytest -q      # 29 passed
 ruff check .                            # from the repo root
 mypy --ignore-missing-imports .         # from harness/
 ```
@@ -318,7 +327,7 @@ kills every multi-entry intraday design before a line is written.
 
 | | Status |
 |---|---|
-| Validation harness, 4 checks, 1 composing gate, 27 tests, CI on 3 Python versions | ✅ **done, runnable** |
+| Validation harness, 4 checks, 1 composing gate, 29 tests, CI on 3 Python versions | ✅ **done, runnable** |
 | Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
 | The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
 
@@ -329,7 +338,7 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 
 | Path | What it is |
 |---|---|
-| [`harness/`](harness/) | The validation harness. 18 Python files, 27 tests, 4 charts. |
+| [`harness/`](harness/) | The validation harness. 18 Python files, 29 tests, 4 charts. |
 | [`DECISIONS.md`](DECISIONS.md) | Append-only decision log. The reasoning record. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
 | [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Repository-level agent instructions and how the project is driven. Not part of the product. |

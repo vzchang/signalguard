@@ -109,6 +109,16 @@ def main() -> None:
     print(v_ma.render())
     print()
 
+    # C. the control arm: same search, full sample. Without this, the gate could be
+    # rejecting on trial count alone rather than on trials relative to sample size.
+    best_c, n_trials_c, var_sr_c = ma_crossover_search(r, fasts, slows)
+    v_c = evaluate(returns=best_c, n_trials=n_trials_c, var_trial_sharpes=max(var_sr_c, 1e-6),
+                   wf_series=r, wf_splits=8, wf_grid=grid)
+    print(f"  STRATEGY C  best of {n_trials_c} MA combos on the FULL 155y sample (control)")
+    print(f"    winner annualized Sharpe {ann(sharpe_ratio(best_c)):+.2f}")
+    print(v_c.render())
+    print()
+
     print("  Takeaway: the gate PASSES buy-and-hold over 155y (the equity premium is real and")
     print("  a-priori) and FLAGS the short-window parameter search whose 2.0 Sharpe is a")
     print("  small-sample artifact. Overfitting is trials-vs-sample-size, and the gate feels")
