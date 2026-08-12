@@ -262,7 +262,7 @@ The last two layers do not trust the ones above them, which is the point.
 | [`.claude/hooks/route.sh`](.claude/hooks/route.sh) | Prompt-to-workflow routing, fired before the model sees the prompt |
 | [`.claude/commands/qd.md`](.claude/commands/qd.md) | Task gating: compiles a rough ask into a falsifiable `Done when:`, then stops for approval |
 | [`.claude/settings.json`](.claude/settings.json) | Least-privilege tool permissions and an explicit deny list |
-| [`DECISIONS.md`](DECISIONS.md) | The append-only record of what was decided, and what was overturned |
+| [`DECISIONS.md`](DECISIONS.md) | The record of what was decided, and what adversarial review overturned |
 
 **Bounded tool surface.** The agent gets the capabilities local development requires;
 sensitive paths and every remote git operation are denied, so publishing stays manual.
@@ -299,11 +299,11 @@ with the battery in [`docs/PROMPTING.md`](docs/PROMPTING.md):
 
 ## The engineering record
 
-[`DECISIONS.md`](DECISIONS.md) is an append-only log of what was decided and what was
-rejected. **Five decisions in it were overturned by adversarial review**, including the
+[`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
+rejected, curated down to the calls that still stand. **Five decisions in it were overturned by adversarial review**, including the
 original instrument choice, after the arithmetic showed MNQ sits outside a defensible risk
-band even intraday. Superseded entries are left unedited, with a pointer to what replaced
-them.
+band even intraday. The audits that overturned them are kept in full, because the
+reasoning that changed a decision outlasts the decision.
 
 ## Three things that govern the design
 

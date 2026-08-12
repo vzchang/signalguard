@@ -213,7 +213,8 @@ Normalized metrics only, and include the CFTC 4.41(b)(1)(i) statement.
   word; everything after that should earn its place.
 - **End with `/remember`.** Writes session state so the next one starts warm instead of
   re-deriving where you were.
-- **Log as you go.** `DECISIONS.md` is written during the session, never reconstructed. It
+- **Log as you go.** `DECISIONS.md` is written during the session, never reconstructed, then
+  curated before publication. It
   costs minutes and it is the strongest portfolio artifact per unit of effort.
 - **Run `/fewer-permission-prompts` once**, early. It scans your transcripts and allowlists
   the read-only commands you actually use.
