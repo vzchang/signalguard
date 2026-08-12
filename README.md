@@ -300,9 +300,9 @@ with the battery in [`docs/PROMPTING.md`](docs/PROMPTING.md):
 ## The engineering record
 
 [`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
-rejected, curated down to the calls that still stand. **Five decisions in it were overturned by adversarial review**, including the
-original instrument choice, after the arithmetic showed MNQ sits outside a defensible risk
-band even intraday. The audits that overturned them are kept in full, because the
+rejected, curated down to the seven calls that still stand. **Five decisions in it were
+overturned by adversarial review**, including the original instrument choice, after the
+arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that overturned them are kept in full, because the
 reasoning that changed a decision outlasts the decision.
 
 ## Three things that govern the design
