@@ -65,7 +65,7 @@ Two things follow, and they are why the rest of the repo is shaped the way it is
 2. **The strategy alone cannot tell you.** Sharpe 1.9 from noise and Sharpe 1.9 from a real
    edge are identical if all you have is the return series. What distinguishes them is `N`: how
    many candidates were tried. The Deflated Sharpe Ratio takes `N` as an input and asks
-   whether the best of `N` draws would look this good by chance. At N=200 it rejects; at N=5
+   whether the best of `N` draws would look this good by chance. At N=200 it rejects; at N=3
    the *same returns* pass.
 
 That last sentence is the load-bearing test in the suite, and it cuts both ways: the harness
@@ -302,8 +302,9 @@ with the battery in [`docs/PROMPTING.md`](docs/PROMPTING.md):
 [`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
 rejected, curated down to the seven calls that still stand. **Five decisions in it were
 overturned by adversarial review**, including the original instrument choice, after the
-arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that overturned them are kept in full, because the
-reasoning that changed a decision outlasts the decision.
+arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that
+overturned them are kept in full, because the reasoning that changed a decision outlasts
+the decision.
 
 ## Three things that govern the design
 
@@ -312,16 +313,16 @@ interface; backtest and live differ only by which `DataFeed`, `ExecutionHandler`
 are injected. Divergent codebases drift and then lie to you.
 
 **2. Realistic net Sharpe is 0.5 to 1.0. Anything above ~2.0 backtested is a bug report.**
-On a 4-year window the noise ceiling for even a small honest search is ~0.90 to 1.22 (an
-inference from private research, not computed here; the in-repo demo reports a 1.91 winner
-over 200 trials on 2 years), *above* the entire realistic target band. So validation runs on the longest available history, and
-the trial budget is capped before looking.
+On a 4-year window the noise ceiling for even a small honest search is ~0.90 to 1.22,
+*above* the entire realistic target band. So validation runs on the longest available
+history, and the trial budget is capped before looking. (That ceiling is an inference from
+private research, not computed here; the in-repo demo reports a 1.91 winner over 200 trials
+on 2 years.)
 
-**3. Costs are a hard constraint on strategy shape.** *(The figures in this section are
-domain inferences carried in from private research, not outputs of the code in this repo.)*
-At $2.90 all-in per round turn, a
+**3. Costs are a hard constraint on strategy shape.** At $2.90 all-in per round turn, a
 10%-of-equity annual cost ceiling permits ~275 round turns/year ≈ 1.09 per trading day. That
-kills every multi-entry intraday design before a line is written.
+kills every multi-entry intraday design before a line is written. (These figures are domain
+inferences carried in from private research, not outputs of the code here.)
 
 ## Delivered vs. planned
 
@@ -339,7 +340,7 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 | Path | What it is |
 |---|---|
 | [`harness/`](harness/) | The validation harness. 18 Python files, 29 tests, 4 charts. |
-| [`DECISIONS.md`](DECISIONS.md) | Append-only decision log. The reasoning record. |
+| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: seven decisions, five of them overturned by audit. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
 | [`CLAUDE.md`](CLAUDE.md) + [`docs/PROMPTING.md`](docs/PROMPTING.md) | Repository-level agent instructions and how the project is driven. Not part of the product. |
 | [`docs/`](docs/) | A writeup of the harness, and how the project is driven with Claude Code. |
