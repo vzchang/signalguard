@@ -10,6 +10,17 @@ Run:  python3 gate_demo.py
 from __future__ import annotations
 
 import numpy as np
+from cost_survival import (
+    EQUITY,
+    FAST_LOOKBACK,
+    N_BARS,
+    PERIODS_PER_YEAR,
+    ROUND_TURN_USD,
+    SLOW_LOOKBACK,
+    cost_fraction,
+)
+from cost_survival import make_returns as cost_make_returns
+from cost_survival import strategy_returns as cost_strategy_returns
 from deflated_sharpe import best_of_n_noise
 from gate import Verdict, evaluate
 from lookahead_detector import make_returns
@@ -37,11 +48,16 @@ def scenario_overfit_artifact() -> Verdict:
 
     wf = wf_make_returns(3000, np.random.default_rng(4))
 
+    cg, ct = cost_strategy_returns(
+        cost_make_returns(N_BARS, np.random.default_rng(20260818)), FAST_LOOKBACK)
+
     return evaluate(
         returns=best, n_trials=200, var_trial_sharpes=var_sr,
         prices=prices,
         cv_plain=plain, cv_purged=purged, cv_baseline=base,
         wf_series=wf, wf_splits=8, wf_grid=list(range(2, 61)),
+        cost_gross=cg, cost_turns=ct, cost_frac=cost_fraction(ROUND_TURN_USD, EQUITY),
+        cost_equity=EQUITY, cost_periods_per_year=PERIODS_PER_YEAR,
     )
 
 
@@ -63,11 +79,17 @@ def scenario_clean_strategy() -> Verdict:
     # a walk-forward with a REAL edge that survives: bias the series so momentum persists
     m = rng.normal(0.0004, 0.01, 3000)  # small positive drift -> long-momentum survives OOS
 
+    # the same edge held long enough to pay for its own turnover
+    cg, ct = cost_strategy_returns(
+        cost_make_returns(N_BARS, np.random.default_rng(20260818)), SLOW_LOOKBACK)
+
     return evaluate(
         returns=edged, n_trials=3, var_trial_sharpes=var_small,
         prices=None,  # no price series to audit -> lookahead check SKIPs, honestly
         cv_plain=plain, cv_purged=purged, cv_baseline=base,
         wf_series=m, wf_splits=8, wf_grid=list(range(2, 61)),
+        cost_gross=cg, cost_turns=ct, cost_frac=cost_fraction(ROUND_TURN_USD, EQUITY),
+        cost_equity=EQUITY, cost_periods_per_year=PERIODS_PER_YEAR,
     )
 
 

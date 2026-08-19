@@ -1,8 +1,8 @@
 """
-The SignalGuard validation gate: run all four overfitting checks, return one verdict.
+The SignalGuard validation gate: run all five checks, return one verdict.
 
 This is the thesis of the whole project in one function, "a harness that can honestly
-reject a strategy." Each of the four demo modules contributes one check; this composes them
+reject a strategy." Each of the five demo modules contributes one check; this composes them
 into a single ACCEPT / REJECT decision with a reason per check.
 
 A strategy is represented as its realized per-bar returns plus the metadata the checks need
@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 import numpy as np
+from cost_survival import breakeven_cost_fraction, net_returns
+from cost_survival import sharpe as cost_sharpe
 from deflated_sharpe import deflated_sharpe_ratio
 from lookahead_detector import pnl_next_bar, pnl_same_bar
 from lookahead_detector import sharpe as ann_sharpe
@@ -161,6 +163,53 @@ def check_walk_forward(returns_series: np.ndarray | None, n_splits: int,
                        f"WFE {wfe:.2f} < {min_wfe}  (IS {is_m:+.2f} -> OOS {oos_m:+.2f}, edge did not survive)")
 
 
+def check_cost_survival(gross: np.ndarray | None,
+                        turns: np.ndarray | None,
+                        cost_frac: float | None,
+                        min_retention: float = 0.5,
+                        equity: float | None = None,
+                        periods_per_year: int = 252) -> CheckResult:
+    """
+    PASS if the edge still exists after paying for its own turnover. The other four checks
+    ask whether a number is real; this one asks whether a real number is large enough to
+    trade. Retention and the sign of the net Sharpe are both invariant to the annualization
+    factor, so `periods_per_year` only affects what gets printed.
+    """
+    if gross is None or turns is None or cost_frac is None:
+        return CheckResult("cost_survival", Status.SKIP,
+                           "no cost inputs supplied; cannot charge turnover")
+    g = np.asarray(gross, dtype=float)
+    t = np.asarray(turns, dtype=bool)
+    if not np.isfinite(g).all():
+        # same rule as purged_cv: an undefined score is evidence against, not absence of it
+        return CheckResult("cost_survival", Status.FAIL,
+                           "return series is not finite; net-of-cost Sharpe undefined")
+
+    gross_sr = cost_sharpe(g, periods_per_year)
+    net_sr = cost_sharpe(net_returns(g, t, cost_frac), periods_per_year)
+    be = breakeven_cost_fraction(g, t)
+
+    if equity is not None:
+        paid = f"${cost_frac * equity:.2f}"
+        breakeven = "unbounded" if math.isinf(be) else f"${be * equity:.2f}"
+    else:
+        paid = f"{cost_frac:.2%}"
+        breakeven = "unbounded" if math.isinf(be) else f"{be:.2%}"
+    ctx = f"gross {gross_sr:+.2f} -> net {net_sr:+.2f}, break-even {breakeven}/RT vs {paid} paid"
+
+    # costs make a losing strategy MORE negative, so net/gross exceeds 1 when both are
+    # negative. Unguarded, a strategy with no edge at all reads as perfect retention.
+    if gross_sr <= 0:
+        return CheckResult("cost_survival", Status.FAIL,
+                           f"no gross edge to pay costs with ({ctx})")
+    retention = net_sr / gross_sr
+    if net_sr > 0 and retention >= min_retention:
+        return CheckResult("cost_survival", Status.PASS,
+                           f"net/gross {retention:.2f} >= {min_retention}  ({ctx})")
+    return CheckResult("cost_survival", Status.FAIL,
+                       f"net/gross {retention:.2f} < {min_retention}  ({ctx})")
+
+
 def evaluate(returns: np.ndarray | None = None, *,
              n_trials: int | None = None,
              var_trial_sharpes: float | None = None,
@@ -170,9 +219,14 @@ def evaluate(returns: np.ndarray | None = None, *,
              cv_baseline: float = 0.5,
              wf_series: np.ndarray | None = None,
              wf_splits: int = 8,
-             wf_grid: Sequence[int] | None = None) -> Verdict:
+             wf_grid: Sequence[int] | None = None,
+             cost_gross: np.ndarray | None = None,
+             cost_turns: np.ndarray | None = None,
+             cost_frac: float | None = None,
+             cost_equity: float | None = None,
+             cost_periods_per_year: int = 252) -> Verdict:
     """
-    Compose the four checks into one verdict. Every argument is optional; a check whose
+    Compose the five checks into one verdict. Every argument is optional; a check whose
     inputs are missing reports SKIP (never a silent PASS), and ACCEPT requires >=1 ran and
     0 failed. This is the single entry point the whole project points at.
     """
@@ -182,5 +236,8 @@ def evaluate(returns: np.ndarray | None = None, *,
         check_lookahead(prices),
         check_purged_cv(cv_plain, cv_purged, cv_baseline),
         check_walk_forward(wf_series, wf_splits, wf_grid),
+        check_cost_survival(cost_gross, cost_turns, cost_frac,
+                            equity=cost_equity,
+                            periods_per_year=cost_periods_per_year),
     ]
     return Verdict(checks)

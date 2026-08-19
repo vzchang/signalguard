@@ -10,6 +10,7 @@ from __future__ import annotations
 import numpy as np
 from gate import (
     Status,
+    check_cost_survival,
     check_deflated_sharpe,
     check_lookahead,
     check_purged_cv,
@@ -25,6 +26,17 @@ def test_THE_GATE_rejects_artifact_accepts_clean() -> None:
     assert v_bad.accepted is False, "an overfitting artifact must be REJECTED"
     assert v_good.accepted is True, "a clean strategy must be ACCEPTED"
     assert len(v_bad.failed) >= 3, "the artifact should fail on multiple independent grounds"
+
+
+def test_cost_check_is_composed_into_the_verdict() -> None:
+    """The fifth check must be present in every verdict, SKIPping when uninformed."""
+    v = evaluate()
+    assert [c.name for c in v.checks] == [
+        "deflated_sharpe", "lookahead_audit", "purged_cv", "walk_forward", "cost_survival",
+    ]
+    named = {c.name: c for c in scenario_overfit_artifact().checks}
+    assert named["cost_survival"].status is Status.FAIL, \
+        "the artifact trades far above the cost ceiling and must fail on cost"
 
 
 def test_accept_requires_at_least_one_check_ran() -> None:
@@ -44,6 +56,7 @@ def test_missing_inputs_skip_not_fail() -> None:
     assert check_lookahead(None).status is Status.SKIP
     assert check_deflated_sharpe(np.zeros(10), None, None).status is Status.SKIP
     assert check_walk_forward(None, 8, None).status is Status.SKIP
+    assert check_cost_survival(None, None, None).status is Status.SKIP
 
 
 def test_deflated_sharpe_check_directions() -> None:
