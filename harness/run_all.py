@@ -35,6 +35,7 @@ PLOTS = [
     "plot_purged_cv.py",
     "plot_lookahead.py",
     "plot_walk_forward.py",
+    "plot_cost_survival.py",
 ]
 
 
