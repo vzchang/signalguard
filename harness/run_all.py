@@ -17,6 +17,7 @@ DEMOS = [
     "purged_cv.py",
     "lookahead_detector.py",
     "walk_forward.py",
+    "cost_survival.py",
     "gate_demo.py",
     "real_data_gate.py",
 ]
@@ -25,6 +26,7 @@ TESTS = [
     "test_purged_cv.py",
     "test_lookahead_detector.py",
     "test_walk_forward.py",
+    "test_cost_survival.py",
     "test_gate.py",
     "test_real_data_gate.py",
 ]
