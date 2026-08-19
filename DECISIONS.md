@@ -389,3 +389,40 @@ It also **deleted one design's centerpiece** (Databento `status`-schema session 
 grounds: unpriced entitlement against the verified $75/mo ceiling, unverified halt encoding, and
 a fail-closed mode that disarms every staleness page. `exchange_calendars` plus a hardcoded
 16:00-17:00 CT window gets ~95% of the value for $0.
+
+---
+
+## Costs move inside the validator, reversing a documented scope boundary
+
+**Decision.** The gate gets a fifth check, `cost_survival`, which charges a per-round-turn
+cost against turnover and gates on net/gross Sharpe retention. The README previously stated
+the opposite as a deliberate limit: "the gate validates a return series, not a trading
+system, costs enter this project as a constraint on strategy shape, not as a term in the
+validator."
+
+**Why the reversal.** The boundary was defensible for the other four checks, which all ask
+whether a number is real. It was not defensible for the gate as a whole, because the gate
+returns ACCEPT. A strategy can pass selection, leakage, lookahead, and walk-forward and
+still be worthless, and the four-check gate had no way to say so. Prime directive 5 says
+costs are not allowed to stay assumed; leaving them outside the only component that renders
+a verdict is how an assumption stays unexamined.
+
+**Alternatives rejected.** Gating on break-even cost against a safety multiple of what you
+pay was more directly decision-useful but introduced a threshold shape used nowhere else in
+the gate; retention mirrors walk-forward efficiency, so the gate reads consistently and has
+one fewer convention to defend. Break-even is still reported, just not gated on.
+
+**What is measured and what is assumed.** The break-even cost per round turn is computed
+from the return series and assumes nothing. The $2.90 all-in micro round turn it gets
+compared against is still the unverified inference it always was, so the check's hard output
+is the break-even and its soft output is the comparison. This is deliberate: the check is
+useful before the cost figure is ever verified.
+
+**A demo that was cut for being untrue.** The intended illustration was that higher trade
+frequency flatters the gross Sharpe while destroying the net one. It held on one seed and
+failed on the other 39, so the claim was dropped rather than seeded into existence. What
+survives is weaker and true: two variants post ordinary, indistinguishable gross Sharpes,
+and only the retention ratio separates them.
+
+**Confidence.** High on the arithmetic, which is now run rather than asserted, and the
+10%-of-equity budget ceiling reproduces at 276 round turns/year. Low on the $2.90.

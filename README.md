@@ -39,7 +39,7 @@ strategy's returns and the search that produced them, and returns `ACCEPT`, `REJ
 
 ## What it catches
 
-Four independent overfitting failure modes, each a self-contained demo with its own tests.
+Five independent ways a backtest misleads, each a self-contained demo with its own tests.
 numpy for the logic, deterministic, no market data or broker required.
 
 | Check | The failure mode it catches | Result |
@@ -48,6 +48,7 @@ numpy for the logic, deterministic, no market data or broker required.
 | [`purged_cv.py`](harness/purged_cv.py) | Label leakage across overlapping samples | Shuffled k-fold reads 0.600 → purge + embargo collapses it to **0.504**, coin-flip, and below the 0.586 majority-class rate |
 | [`lookahead_detector.py`](harness/lookahead_detector.py) | Filling on the bar you decided from | A same-bar peek prints **+20 Sharpe from zero edge**; two detectors catch it |
 | [`walk_forward.py`](harness/walk_forward.py) | In-sample fit that doesn't survive | IS +0.87 → OOS +0.16, **walk-forward efficiency 0.18** |
+| [`cost_survival.py`](harness/cost_survival.py) | A real edge too small to pay its own commissions | Two ordinary gross Sharpes, +0.64 and +1.09; net of $2.90/round turn one is **-1.34** and the other **+0.87** |
 
 ## Why the 1.9 Sharpe matters
 
@@ -82,10 +83,12 @@ flowchart LR
     A2["price series, and fill timestamps"] --> C2{"lookahead_audit"}
     A3["features, labels, sample horizon"] --> C3{"purged_cv"}
     A4["the full return history"] --> C4{"walk_forward"}
+    A5["gross returns, turnover, cost per round turn"] --> C5{"cost_survival"}
     C1 --> G["gate.py composes one verdict"]
     C2 --> G
     C3 --> G
     C4 --> G
+    C5 --> G
     G --> V["ACCEPT or REJECT, with a reason per check"]
 ```
 
@@ -114,7 +117,7 @@ cd harness
 
 python3 gate_demo.py        # the composed gate: one REJECT, one ACCEPT
 python3 real_data_gate.py   # the same gate on 155 years of S&P 500 returns
-python3 run_all.py          # every demo, all 29 tests, all 4 charts
+python3 run_all.py          # every demo, all 40 tests, all 5 charts
 ```
 
 Every experiment is seeded, so the numbers in this README reproduce exactly. `run_all.py`
@@ -130,7 +133,8 @@ SignalGuard validation gate
   [FAIL] lookahead_audit   same-bar/next-bar gap +20.88  (books the bar it traded on)
   [FAIL] purged_cv         purged 0.50 at baseline, leak +0.10  (score was leakage)
   [FAIL] walk_forward      WFE -0.14 < 0.5  (IS +0.91 -> OOS -0.13, edge did not survive)
-  VERDICT: REJECT (4/4 checks failed)
+  [FAIL] cost_survival     net/gross -2.10 < 0.5  (gross +0.64 -> net -1.34, break-even $0.93/RT vs $2.90 paid)
+  VERDICT: REJECT (5/5 checks failed)
 
 #  Scenario 2: a clean strategy (should be ACCEPTED)
 SignalGuard validation gate
@@ -138,7 +142,8 @@ SignalGuard validation gate
   [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
   [PASS] purged_cv         purged 0.62, leak +0.01  (no material leakage)
   [PASS] walk_forward      WFE 0.72 >= 0.5  (IS +0.74 -> OOS +0.54)
-  VERDICT: ACCEPT (3/3 checks passed)
+  [PASS] cost_survival     net/gross 0.79 >= 0.5  (gross +1.09 -> net +0.87, break-even $14.02/RT vs $2.90 paid)
+  VERDICT: ACCEPT (4/4 checks passed)
 ```
 
 ### On real data: 155 years of S&P 500
@@ -157,6 +162,7 @@ STRATEGY A  buy-and-hold, full 155y (a priori, 1 'trial')
   [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
   [SKIP] purged_cv         no cross-validation scores supplied
   [PASS] walk_forward      WFE 0.76 >= 0.5  (IS +2.15 -> OOS +1.64)
+  [SKIP] cost_survival     no cost inputs supplied; cannot charge turnover
   VERDICT: ACCEPT (2/2 checks passed)
 
 STRATEGY B  best of 153 MA combos on a SHORT 72-month window (overfit trap)
@@ -165,6 +171,7 @@ STRATEGY B  best of 153 MA combos on a SHORT 72-month window (overfit trap)
   [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
   [SKIP] purged_cv         no cross-validation scores supplied
   [FAIL] walk_forward      WFE 0.21 < 0.5  (IS +9.86 -> OOS +2.11, edge did not survive)
+  [SKIP] cost_survival     no cost inputs supplied; cannot charge turnover
   VERDICT: REJECT (2/2 checks failed)
 
 STRATEGY C  best of 153 MA combos on the FULL 155y sample (control)
@@ -173,6 +180,7 @@ STRATEGY C  best of 153 MA combos on the FULL 155y sample (control)
   [SKIP] lookahead_audit   no price series supplied; cannot audit fill timing
   [SKIP] purged_cv         no cross-validation scores supplied
   [PASS] walk_forward      WFE 0.76 >= 0.5  (IS +2.15 -> OOS +1.64)
+  [SKIP] cost_survival     no cost inputs supplied; cannot charge turnover
   VERDICT: ACCEPT (2/2 checks passed)
 ```
 
@@ -201,12 +209,13 @@ worth stating precisely:
   correlated trials, which violates the assumption and makes the haircut too generous.
 - **The thresholds are conventions, not derived optima.** DSR ≥ 0.95, WFE ≥ 0.5, and the
   0.03 leak margin are chosen cutoffs. They are defensible and they are not laws.
-- **An `ACCEPT` can rest on fewer than four checks.** `SKIP` is never silently upgraded to
-  `PASS`, but the verdict above passes on two of four, because no price series or CV scores
-  were supplied. The count is always printed for exactly this reason.
-- **The gate validates a return series, not a trading system.** Transaction costs, slippage,
-  capacity, and borrow are not modeled inside it. Costs enter this project as a constraint
-  on strategy shape, not as a term in the validator.
+- **An `ACCEPT` can rest on fewer than five checks.** `SKIP` is never silently upgraded to
+  `PASS`, but the verdict above passes on two of five, because no price series, CV scores,
+  or cost inputs were supplied. The count is always printed for exactly this reason.
+- **The cost check charges commissions, not slippage.** It models a fixed per-round-turn
+  cost and nothing else. Market impact, spread, partial fills, capacity, and borrow are
+  still outside the validator, and the round-turn figure it is compared against is an
+  assumption. What the check measures without assuming anything is the break-even cost.
 - **Passing on history is not a forecast.** Walk-forward measures decay *within* the sample.
   Regime change after the sample is outside what any of these checks can see, and the S&P
   index series embeds its own reconstitution and survivorship.
@@ -220,7 +229,7 @@ The tests are plain asserts, so the suite has no dependency beyond numpy, but th
 written as `test_*` functions and run under pytest unmodified:
 
 ```bash
-cd harness && python3 -m pytest -q      # 29 passed
+cd harness && python3 -m pytest -q      # 40 passed
 ruff check .                            # from the repo root
 mypy --ignore-missing-imports .         # from harness/
 ```
@@ -260,16 +269,18 @@ history, and the trial budget is capped before looking. (That ceiling is an infe
 private research, not computed here; the in-repo demo reports a 1.91 winner over 200 trials
 on 2 years.)
 
-**3. Costs are a hard constraint on strategy shape.** At $2.90 all-in per round turn, a
-10%-of-equity annual cost ceiling permits ~275 round turns/year ≈ 1.09 per trading day. That
-kills every multi-entry intraday design before a line is written. (These figures are domain
-inferences carried in from private research, not outputs of the code here.)
+**3. Costs are a hard constraint on strategy shape.** At $2.90 all-in per round turn on an
+$8,000 account, a 10%-of-equity annual cost ceiling permits 276 round turns/year ≈ 1.09 per
+trading day, which kills every multi-entry intraday design before a line is written. That
+arithmetic is now run by [`cost_survival.py`](harness/cost_survival.py) rather than asserted,
+and the demo shows a genuine edge going negative near exactly that frequency. The $2.90
+input itself remains an unverified inference carried in from private research.
 
 ## Delivered vs. planned
 
 | | Status |
 |---|---|
-| Validation harness, 4 checks, 1 composing gate, 29 tests, CI on 3 Python versions | ✅ **done, runnable** |
+| Validation harness, 5 checks, 1 composing gate, 40 tests, CI on 3 Python versions | ✅ **done, runnable** |
 | Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
 | The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
 
@@ -280,7 +291,7 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 
 | Path | What it is |
 |---|---|
-| [`harness/`](harness/) | The validation harness. 18 Python files, 29 tests, 4 charts. |
+| [`harness/`](harness/) | The validation harness. 21 Python files, 40 tests, 5 charts. |
 | [`DECISIONS.md`](DECISIONS.md) | The reasoning record: seven decisions, five of them overturned by audit. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
 | [`CLAUDE.md`](CLAUDE.md) | Repository-level agent instructions, loaded every session. Not part of the product. |

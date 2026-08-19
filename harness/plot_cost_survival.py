@@ -46,16 +46,14 @@ def main() -> None:
     cf = cost_fraction(ROUND_TURN_USD, EQUITY)
     ceiling = ANNUAL_COST_BUDGET / cf
 
-    rty, gross_sr, net_sr = [], [], []
+    rows = []
     for k in LOOKBACKS:
         g, t = strategy_returns(r, k)
-        rty.append(round_turns_per_year(t))
-        gross_sr.append(sharpe(g))
-        net_sr.append(sharpe(net_returns(g, t, cf)))
-    order = np.argsort(rty)
-    rty = np.array(rty)[order]
-    gross_sr = np.array(gross_sr)[order]
-    net_sr = np.array(net_sr)[order]
+        rows.append((round_turns_per_year(t), sharpe(g), sharpe(net_returns(g, t, cf))))
+    rows.sort()
+    rty = np.array([x[0] for x in rows])
+    gross_sr = np.array([x[1] for x in rows])
+    net_sr = np.array([x[2] for x in rows])
 
     fig, ax = plt.subplots(figsize=(9, 5), dpi=130)
     fig.patch.set_facecolor(SURFACE)

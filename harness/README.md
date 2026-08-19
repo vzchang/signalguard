@@ -1,8 +1,9 @@
 # SignalGuard demos, a backtest that rejects itself
 
-Four self-contained checks, each generating synthetic data with a **known** answer (usually
-zero true edge), then showing a naive method being fooled by it and a corrected method
-getting it right.
+Five self-contained checks, each generating synthetic data with a **known** answer, then
+showing a naive method being fooled by it and a corrected method getting it right. In the
+first four the true edge is zero and the naive method finds one anyway. In the fifth the
+edge is real and the naive method misses that it cannot be traded.
 
 numpy for the logic, matplotlib for the charts. Deterministic (seeded). No market data, no
 broker, no scipy, the standard-normal CDF and its inverse are implemented from scratch.
@@ -21,12 +22,13 @@ python3 deflated_sharpe.py    && python3 test_deflated_sharpe.py
 python3 purged_cv.py          && python3 test_purged_cv.py
 python3 lookahead_detector.py && python3 test_lookahead_detector.py
 python3 walk_forward.py       && python3 test_walk_forward.py
-python3 plot_*.py                  # regenerate the four charts
+python3 cost_survival.py      && python3 test_cost_survival.py
+python3 plot_*.py                  # regenerate the five charts
 ```
 
-## The gate, all four checks, one verdict
+## The gate, all five checks, one verdict
 
-The four checks compose into a single `evaluate(...)` that returns ACCEPT or REJECT with a
+The five checks compose into a single `evaluate(...)` that returns ACCEPT or REJECT with a
 reason per check.
 
 ```
@@ -35,7 +37,8 @@ SignalGuard validation gate
   [FAIL] lookahead_audit   same-bar/next-bar gap +20.88  (books the bar it traded on)
   [FAIL] purged_cv         purged 0.50 at baseline, leak +0.10  (score was leakage)
   [FAIL] walk_forward      WFE -0.14 < 0.5  (IS +0.91 -> OOS -0.13, edge did not survive)
-  VERDICT: REJECT (4/4 checks failed)
+  [FAIL] cost_survival     net/gross -2.10 < 0.5  (gross +0.64 -> net -1.34, break-even $0.93/RT vs $2.90 paid)
+  VERDICT: REJECT (5/5 checks failed)
 ```
 
 `gate_demo.py` runs it on an overfitting artifact (REJECT, above) and a clean strategy
@@ -113,6 +116,51 @@ walk-forward efficiency   : +0.18
 
 ![walk-forward efficiency](walk_forward_efficiency.png)
 
+## 5. Cost survival, the edge that exists gross and does not exist net
+
+The first four checks ask whether a backtested number is real. This one assumes it is and
+asks the next question: **is it big enough to pay for its own turnover?** Costs scale with
+how often you trade; edge does not. Past some frequency, a genuine edge is somebody else's
+commission revenue.
+
+One price series carrying two real edges, traded at two holding periods:
+
+```
+FAST  lookback 1 bar
+  gross Sharpe            :   +0.64
+  net Sharpe              :   -1.34
+  net / gross retention   :   -2.10
+  round turns per year    :     747   (2.97/day)
+  annual commission bill  :   27.1% of equity
+  break-even cost per RT  : $  0.93   vs $2.90 assumed paid
+
+SLOW  lookback 48 bars
+  gross Sharpe            :   +1.09
+  net Sharpe              :   +0.87
+  net / gross retention   :   +0.79
+  round turns per year    :      85   (0.34/day)
+  annual commission bill  :    3.1% of equity
+  break-even cost per RT  : $ 14.02   vs $2.90 assumed paid
+```
+
+![cost survival curve](cost_survival_curve.png)
+
+Both gross Sharpes are ordinary, inside the 0.5 to 1.0 band a retail futures system can
+honestly target and nowhere near the ~2.0 that would itself be a defect report. **No other
+check in this harness distinguishes them.** The fast variant spends 27% of equity a year on
+commissions to harvest an edge worth less than that, and only the retention ratio says so.
+
+Two things about this demo are worth stating plainly:
+
+- **The number it reports is the break-even cost, and that one is measured.** $0.93 and
+  $14.02 per round turn come out of the return series and assume no cost figure at all. The
+  $2.90 they are compared against is an assumption carried in from private research and is
+  still unverified, so the comparison is the soft half and the break-even is the hard half.
+- **The obvious version of this demo is not true and is not claimed.** "Trading faster looks
+  better gross and dies net" held on one seed out of 40 and vanished on the rest. Choosing
+  that seed would have made a cleaner story out of a result that is not there, which is the
+  exact failure the other four checks exist to catch.
+
 ---
 
 ## On real data, 155 years of S&P 500
@@ -143,9 +191,10 @@ years is enough data to survive the deflation. (`real_data_gate.py`, `test_real_
 
 ## Why these are the pieces worth showing
 
-Together they are the four ways a backtest lies, selection across trials, leakage across
-folds, lookahead within a bar, and overfitting across time, each demonstrated on data whose
-true edge is zero, so the naive number is provably wrong. They are runnable slices of Phase 1
+Together they are the five ways a backtest lies, selection across trials, leakage across
+folds, lookahead within a bar, overfitting across time, and an edge too small to pay its own
+commissions. The first four are demonstrated on data whose true edge is zero, so the naive
+number is provably wrong; the fifth on data whose edge is real but unaffordable. They are runnable slices of Phase 1
 of a larger system (SignalGuard) whose organizing principle is: *the first deliverable is a
 harness that can honestly reject a strategy, not a profitable one.*
 
