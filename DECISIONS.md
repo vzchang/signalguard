@@ -426,3 +426,53 @@ and only the retention ratio separates them.
 
 **Confidence.** High on the arithmetic, which is now run rather than asserted, and the
 10%-of-equity budget ceiling reproduces at 276 round turns/year. Low on the $2.90.
+
+
+## The $2.90 round turn is traced to schedules, and MES turns out 27% more expensive
+
+**Decision.** The all-in micro round turn is no longer carried as an unverified inference.
+Its components are sourced: per side, $0.85 IBKR execution at up to 1,000 contracts/month,
+$0.353 CME exchange fee recovery for the micro equity index group (MES, MNQ, M2K, VOLQ), and
+$0.01 NFA regulatory fee. That is $2.43 per round turn before spread. `ROUND_TURN_USD` stays
+at 2.90, now documented as the M2K figure rather than as an assumption.
+
+**What the sourcing changed.** Three things, none of them cosmetic. First, the largest single
+component was missing from the facts list entirely: broker commission is $0.85 per side, more
+than double the exchange fee, and CLAUDE.md fact 4 listed only exchange and NFA. Second, the
+NFA figure was wrong in the direction of caution: the fee is $0.01 per side today, not $0.02,
+and it doubles to $0.02 on 2027-07-01, so the old number was right about the future and wrong
+about the present. Third, and the reason this was worth doing: the ceiling is not one number.
+M2K's tick is $0.50 and MES's is $1.25, so one tick of spread puts M2K at $2.93 and MES at
+$3.68. Fact 1 permits either instrument. At a 10%-of-equity budget on $8,000 that is 273
+round turns a year on M2K against 218 on MES, 1.08 per day against 0.86. A shape sized to the
+M2K ceiling is over budget on MES by a quarter.
+
+**What is still not verified.** Prime directive 5 asks for costs modeled from measured fills.
+A published schedule is not a fill. It omits slippage beyond the touch, partial fills, and
+whatever the spread actually is at the moment an order arrives rather than one nominal tick.
+So the correct reading of $2.43 is a floor: the amount that is certain before any execution
+quality enters. The break-even cost the check reports remains the hard number, and the
+comparison against $2.90 remains the soft one.
+
+**On the reconstruction.** $2.43 in fees plus one M2K tick is $2.93, within 0.9% of the
+$2.90 the private research supplied. That is a good sign about the original figure but it is
+an inference about what that research meant, not a confirmation of it, and it is recorded
+here as an inference.
+
+**Alternatives rejected.** Changing `ROUND_TURN_USD` to 2.93 would have been marginally more
+accurate and would have invalidated every pasted gate output in both READMEs and the chart,
+for a 0.9% move inside a figure whose real uncertainty is execution quality. Setting it to
+the MES $3.68 would make the demo pessimistic for the instrument the constitution names
+first. The instrument-specific ceilings are recorded in fact 3 instead, where a strategy
+design will actually hit them.
+
+**Sources.** IBKR CME exchange and regulatory fee schedule and IBKR US futures commission
+schedule, both read 2026-09-14; NFA assessment fee FAQ, read 2026-09-14. CME's own fee
+schedule was not used: the site blocks scripted access and its terms of use prohibit it, so
+the IBKR fee recovery schedule is the primary source for what this account would actually be
+charged, which is the number that matters here anyway.
+
+**Confidence.** High on the three fee components and on the M2K and MES tick values. High on
+the arithmetic, which was computed rather than asserted. Moderate on treating one tick as the
+spread cost, which is a modeling choice, not a measurement. The $3.68 MES figure inherits
+that same caveat.

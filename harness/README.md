@@ -154,8 +154,10 @@ Two things about this demo are worth stating plainly:
 
 - **The number it reports is the break-even cost, and that one is measured.** $0.93 and
   $14.02 per round turn come out of the return series and assume no cost figure at all. The
-  $2.90 they are compared against is an assumption carried in from private research and is
-  still unverified, so the comparison is the soft half and the break-even is the hard half.
+  $2.90 they are compared against is now traced to published schedules (verified 2026-09-14):
+  $2.43 in fees and commission per round turn, plus one $0.50 M2K tick. On MES the same trade
+  costs $3.68, because that tick is $1.25. A published schedule is still not a measured fill,
+  so the comparison remains the soft half and the break-even the hard half.
 - **The obvious version of this demo is not true and is not claimed.** "Trading faster looks
   better gross and dies net" held on one seed out of 40 and vanished on the rest. Choosing
   that seed would have made a cleaner story out of a result that is not there, which is the

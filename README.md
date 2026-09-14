@@ -250,7 +250,7 @@ and a CI job cannot.
 ## The engineering record
 
 [`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
-rejected, curated down to the seven calls that still stand. **Five decisions in it were
+rejected, curated down to the nine calls that still stand. **Five decisions in it were
 overturned by adversarial review**, including the original instrument choice, after the
 arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that
 overturned them are kept in full, because the reasoning that changed a decision outlasts
@@ -273,8 +273,12 @@ on 2 years.)
 $8,000 account, a 10%-of-equity annual cost ceiling permits 276 round turns/year ≈ 1.09 per
 trading day, which kills every multi-entry intraday design before a line is written. That
 arithmetic is now run by [`cost_survival.py`](harness/cost_survival.py) rather than asserted,
-and the demo shows a genuine edge going negative near exactly that frequency. The $2.90
-input itself remains an unverified inference carried in from private research.
+and the demo shows a genuine edge going negative near exactly that frequency. The $2.90 was
+an inference carried in from private research; it is now traced to published schedules
+(verified 2026-09-14). Fees and commission are $2.43 per round turn: per side, $0.85 IBKR
+execution, $0.353 CME exchange fee, $0.01 NFA. One tick of spread puts M2K at $2.93 and MES
+at $3.68, so $2.90 is the M2K figure and understates MES by 27%. These are schedules, not
+measured fills, so prime directive 5 is not satisfied until real fills exist.
 
 ## Delivered vs. planned
 
@@ -292,7 +296,7 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 | Path | What it is |
 |---|---|
 | [`harness/`](harness/) | The validation harness. 21 Python files, 40 tests, 5 charts. |
-| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: seven decisions, five of them overturned by audit. |
+| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: nine decisions, five of them overturned by audit. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
 | [`CLAUDE.md`](CLAUDE.md) | Repository-level agent instructions, loaded every session. Not part of the product. |
 | [`docs/`](docs/) | A writeup of the harness, and [`PROMPTING.md`](docs/PROMPTING.md) on how the project is driven. |
