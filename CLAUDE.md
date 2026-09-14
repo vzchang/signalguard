@@ -110,12 +110,16 @@ Tripwires, not reasoning. Each line is enough to stop you writing the wrong thin
    intraday (2.72% at a 0.25x ATR stop). It is a graduation at roughly $22k, not a start.
 2. **Futures swing is closed at $8k**, not merely gated. M2K's 2x ATR swing stop is 5.95% of
    equity. The swing sleeve runs in ETF shares until roughly $25k to $30k.
-3. **The cost ceiling caps trade frequency at roughly 275 round turns per year**, about 1.09
-   per day at $2.90 all-in. This kills every multi-entry intraday shape before a line is
-   written.
-4. **Micro exchange fees are roughly $0.20 to $0.40 per side plus about $0.02 NFA.** The
-   widely quoted $1.15 to $1.45 is the E-mini number. Never reuse it for micros. Still
-   unverified.
+3. **The cost ceiling caps trade frequency at roughly 275 round turns per year on M2K**,
+   about 1.09 per day at $2.90 all-in. On MES the same budget allows only about 218 round
+   turns, 0.86 per day, because the tick is $1.25 against M2K's $0.50. Use the instrument's
+   own ceiling. This kills every multi-entry intraday shape before a line is written.
+4. **A micro round turn is $2.43 in fees and commission, verified 2026-09-14.** Per side:
+   IBKR $0.85 execution at up to 1,000 contracts/month, $0.353 CME exchange fee, $0.01 NFA.
+   The NFA fee doubles to $0.02 per side on 2027-07-01. The widely quoted $1.15 to $1.45 is
+   the E-mini exchange fee alone, $1.38 on ES; never reuse it for micros. Adding one tick of
+   spread gives $2.93 on M2K and $3.68 on MES. These are published schedules, not measured
+   fills, so prime directive 5 is not yet satisfied.
 5. **The two adapters default in opposite directions.** Databento `bars_timestamp_on_close`
    defaults True; the IB adapter's defaults False. This is a pre-installed lookahead bug. Set
    both explicitly and assert at startup.

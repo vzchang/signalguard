@@ -22,11 +22,16 @@ on gross and dies on net", held on one lucky draw and evaporated on the rest, so
 the claim here. Picking the seed that tells the better story is the exact failure the rest
 of this harness exists to reject.
 
-The cost input is an ASSUMPTION, not a measurement: $2.90 all-in per micro round turn is
-carried in from private research and is still unverified (prime directive 5). So the number
-this module actually reports is `breakeven_cost_fraction`, the round-turn cost at which the
-edge reaches zero. That is measured from the return series and needs no cost assumption at
-all. Compare it to whatever you really pay.
+The cost input is sourced from published schedules, not from measured fills. A micro round
+turn is $2.43 in fees and commission: per side, $0.85 IBKR execution at up to 1,000
+contracts/month, $0.353 CME exchange fee, $0.01 NFA. Add one tick of spread and M2K comes
+to $2.93, MES to $3.68, because the MES tick is $1.25 against M2K's $0.50. The $2.90 used
+below is the M2K figure. Prime directive 5 asks for measured fills, so this is a floor on
+what you will actually pay, not the final answer.
+
+That is why the number this module reports is `breakeven_cost_fraction`, the round-turn cost
+at which the edge reaches zero. It is measured from the return series and needs no cost
+assumption at all. Compare it to whatever you really pay.
 
 Bars are RTH hourly (6/day), because a daily-bar strategy cannot exceed the ~275 round
 turns/year cost ceiling even if it flips every single day, and the ceiling is the point.
@@ -47,7 +52,7 @@ SLOW_LOOKBACK = 48                    # 8 sessions
 N_BARS = 30000                        # ~20 years of RTH hourly bars
 
 EQUITY = 8000.0                       # the account the domain constitution sizes against
-ROUND_TURN_USD = 2.90                 # ASSUMED all-in micro round turn; still unverified
+ROUND_TURN_USD = 2.90                 # M2K all-in: $2.43 fees/commission + one $0.50 tick
 ANNUAL_COST_BUDGET = 0.10             # 10% of equity per year spent on commissions
 
 
