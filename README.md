@@ -250,7 +250,7 @@ and a CI job cannot.
 ## The engineering record
 
 [`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
-rejected, curated down to the nine calls that still stand. **Five decisions in it were
+rejected, curated down to the ten calls that still stand. **Five decisions in it were
 overturned by adversarial review**, including the original instrument choice, after the
 arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that
 overturned them are kept in full, because the reasoning that changed a decision outlasts
@@ -286,7 +286,8 @@ measured fills, so prime directive 5 is not satisfied until real fills exist.
 |---|---|
 | Validation harness, 5 checks, 1 composing gate, 40 tests, CI on 3 Python versions | ✅ **done, runnable** |
 | Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
-| The trading system itself, data pipeline, execution, risk, live | 📐 **specified to the file level, not built** |
+| Kill switch (prime directive 4): 6 trips, 6 blocks, a latch that survives restarts, 207 tests, every mutant killed | ✅ **done, not yet wired to a broker** |
+| The trading system itself, data pipeline, execution, live | 📐 **specified to the file level, not built** |
 
 The ordering is deliberate: the harness that can reject a strategy comes before any
 strategy. Phase plans and the domain constitution are kept private and ship as they land.
@@ -296,7 +297,8 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 | Path | What it is |
 |---|---|
 | [`harness/`](harness/) | The validation harness. 21 Python files, 40 tests, 5 charts. |
-| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: nine decisions, five of them overturned by audit. |
+| [`risk/`](risk/) | The kill switch. Standard library only, 100% branch coverage, zero surviving mutants. |
+| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: ten decisions, five of them overturned by audit. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
 | [`CLAUDE.md`](CLAUDE.md) | Repository-level agent instructions, loaded every session. Not part of the product. |
 | [`docs/`](docs/) | A writeup of the harness, and [`PROMPTING.md`](docs/PROMPTING.md) on how the project is driven. |

@@ -476,3 +476,43 @@ charged, which is the number that matters here anyway.
 the arithmetic, which was computed rather than asserted. Moderate on treating one tick as the
 spread cost, which is a modeling choice, not a measurement. The $3.68 MES figure inherits
 that same caveat.
+
+
+## The kill switch ships as a standalone core, and full coverage turned out not to mean tested
+
+**Decision.** Prime directive 4 is built as `risk/`, a standard-library decision core that
+turns broker and market events into `ACTIVE`, `REDUCING`, or `HALTED`. It is not built inside
+NautilusTrader: the trading core does not exist yet, and a framework Actor would have pulled
+the whole stack into this task. The adapter that enforces its decisions comes with the trading
+core, against a contract written down in `risk/README.md`.
+
+**One trip behavior, split only by exposure.** Every trip flattens, halts, and latches until a
+manual reset: one behavior to reason about and test, where a false trip costs one flatten.
+Stale data is the exception, because market data stops every day from 16:00 to 17:00 CT. Stale
+while flat only blocks new entries and clears itself; stale with a position open trips, since
+the account is then exposed and blind.
+
+**Alternatives rejected.** An append-only event log with replay would give an audit trail at
+the cost of log growth, replay, and schema versioning, for one account with one position. A
+stateless design cannot work at all: the broker reports current equity, not the peak or the
+session's opening value, so drawdown and daily loss would have nothing to compare against.
+
+**What the quality gate found.** The first complete draft had 100% branch coverage and 652
+mutants, of which 92 survived. Coverage said every line ran; mutation testing showed the tests
+could not tell working code from broken code in 92 places. Triage sorted them into three kinds:
+
+- Eight real gaps. The most serious: a mutant that forgot to save the new session id would have
+  re-based the daily loss on every reading, so the daily limit could never trip, and no test
+  noticed.
+- Four pieces of dead code, deleted. The NaN guard on `json.loads` duplicated a finiteness check
+  that already ran on both equity values, and three arguments changed nothing.
+- Message and display text, excluded from mutation by rule, with one test that every flag
+  carries a non-empty detail.
+
+Fixing the gaps also found a bug: a failed save was retried twice per event and logged twice.
+The final code has 207 tests and all 546 mutants killed, and CI now fails on any survivor.
+
+**Confidence.** High on the decision logic and persistence, which are covered by boundary pairs
+on every limit, a restart test on every trip, and a stateful property test. Moderate on the
+staleness limits, which cannot be set until the adapter measures how often the broker actually
+sends account updates.
