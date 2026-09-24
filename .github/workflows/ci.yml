@@ -43,3 +43,34 @@ jobs:
           python-version: "3.12"
       - run: pip install pre-commit
       - run: pre-commit run --all-files --show-diff-on-failure
+
+  risk-suite:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements-dev.txt
+      - run: mypy --strict risk
+      - run: coverage run -m pytest risk
+        env:
+          HYPOTHESIS_PROFILE: ci
+      - run: coverage report
+
+  # Slow, and it only has to prove the tests bite once, so one Python version.
+  risk-mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements-dev.txt
+      - run: mutmut run
+        env:
+          HYPOTHESIS_PROFILE: ci
+      - run: python .github/scripts/check_mutants.py
