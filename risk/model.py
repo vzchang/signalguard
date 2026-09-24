@@ -9,17 +9,23 @@ from enum import Enum
 
 
 class Mode(Enum):
+    """What the system may do: open risk, only reduce it, or nothing."""
+
     ACTIVE = "ACTIVE"
     REDUCING = "REDUCING"
     HALTED = "HALTED"
 
 
 class Effect(Enum):
+    """Whether a reason latches and flattens (TRIP) or only stops new risk (BLOCK)."""
+
     TRIP = "TRIP"
     BLOCK = "BLOCK"
 
 
 class Reason(Enum):
+    """Why the switch is not ACTIVE."""
+
     DAILY_LOSS = "DAILY_LOSS"
     DRAWDOWN = "DRAWDOWN"
     POSITION_CAP = "POSITION_CAP"
@@ -47,6 +53,8 @@ EFFECTS: dict[Reason, frozenset[Effect]] = {
 
 
 class Cause(Enum):
+    """Why the switch is not armed; each value is the detail an operator sees."""
+
     STATE_MISSING = "state file missing"
     STATE_CORRUPT = "state file unreadable or corrupt"
     STATE_NON_FINITE = "non-finite number in state file"
@@ -60,6 +68,8 @@ class Cause(Enum):
 
 @dataclass(frozen=True)
 class Limits:
+    """Kill switch thresholds; each names the largest allowed value."""
+
     daily_loss_usd: float
     max_drawdown_usd: float
     max_position_contracts: int
@@ -92,6 +102,8 @@ class Limits:
 
 @dataclass(frozen=True)
 class Flag:
+    """One reason behind a decision; `latched` marks a trip whose condition has cleared."""
+
     reason: Reason
     effect: Effect
     detail: str
@@ -100,6 +112,8 @@ class Flag:
 
 @dataclass(frozen=True)
 class Decision:
+    """The switch's verdict on one event."""
+
     mode: Mode
     flatten: bool
     flags: tuple[Flag, ...]
@@ -116,4 +130,5 @@ class Decision:
 
     @property
     def tripped(self) -> bool:
+        """Whether any trip is active or latched."""
         return any(f.effect is Effect.TRIP for f in self.flags)

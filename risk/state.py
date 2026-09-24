@@ -19,6 +19,8 @@ VERSION = 1
 
 
 class StateUnavailable(Exception):
+    """The state file cannot be trusted; `cause` says why."""
+
     def __init__(self, cause: Cause) -> None:
         super().__init__(cause.value)
         self.cause = cause
@@ -26,6 +28,8 @@ class StateUnavailable(Exception):
 
 @dataclass(frozen=True)
 class SwitchState:
+    """What survives a restart: the latch, the peak, and the session's opening equity."""
+
     account_id: str
     tripped: bool
     reasons: tuple[Reason, ...]
@@ -156,6 +160,7 @@ class Lock:
         self._fd: int | None = None
 
     def acquire(self) -> bool:
+        """Take the lock without waiting; False if another process holds it."""
         # the directory, not the file: os.replace swaps the file's inode on every save
         try:
             fd = os.open(self._directory, os.O_RDONLY)
@@ -170,6 +175,7 @@ class Lock:
         return True
 
     def release(self) -> None:
+        """Drop the lock; safe to call twice."""
         if self._fd is not None:
             os.close(self._fd)  # closing the descriptor drops the flock
             self._fd = None
