@@ -22,13 +22,12 @@ REGRESSED = "clock moved backwards"  # pragma: no mutate (equivalent: display te
 _RANK = {reason: i for i, reason in enumerate(Reason)}
 
 
+def _finite(net_liq: float) -> bool:
+    return not isinstance(net_liq, bool) and isinstance(net_liq, (int, float)) and math.isfinite(net_liq)
+
+
 def _valid(net_liq: float) -> bool:
-    return (
-        not isinstance(net_liq, bool)
-        and isinstance(net_liq, (int, float))
-        and math.isfinite(net_liq)
-        and net_liq > 0
-    )
+    return _finite(net_liq) and net_liq > 0
 
 
 class KillSwitch:
@@ -87,7 +86,9 @@ class KillSwitch:
             if self._state is not None:
                 state = self._state
                 current = session_id(now)
-                if current != state.session_id:
+                # forward only, and never on a clock known to be behind: a step back across
+                # 17:00 would otherwise rebaseline on post-loss equity and erase the day's loss
+                if current > state.session_id and not self._regressed:
                     state = replace(state, session_id=current, session_start_equity=float(net_liq))
                 state = replace(state, peak_equity=max(state.peak_equity, float(net_liq)))
                 self._commit(state)
@@ -169,7 +170,8 @@ class KillSwitch:
         limits = self._limits
         found: list[Flag] = []
         net = self._net_liq
-        if self._state is not None and net is not None and _valid(net):
+        # finite is enough here: a real negative net liq is the worst loss, not bad data
+        if self._state is not None and net is not None and _finite(net):
             loss = self._state.session_start_equity - net
             if loss > limits.daily_loss_usd:
                 found.append(Flag(Reason.DAILY_LOSS, Effect.TRIP, f"session loss {loss:.2f}"))

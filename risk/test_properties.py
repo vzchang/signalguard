@@ -15,7 +15,7 @@ from risk.conftest import ACCOUNT, LIMITS, START, T0, FakeClock
 from risk.kill_switch import KillSwitch
 from risk.model import Decision, Effect, Mode, Reason
 from risk.session import session_id
-from risk.state import initialize
+from risk.state import initialize, load
 
 settings.register_profile("ci", derandomize=True, max_examples=300, stateful_step_count=40, deadline=None)
 settings.register_profile("dev", max_examples=100, stateful_step_count=40, deadline=None)
@@ -37,6 +37,7 @@ class SwitchMachine(RuleBasedStateMachine):
         self.switch = KillSwitch(LIMITS, self.path, ACCOUNT, self.clock)
         self.position: int | None = None
         self.decision: Decision = self.switch.evaluate()
+        self.saved = load(self.path, ACCOUNT)
 
     def teardown(self) -> None:
         self.switch.close()
@@ -66,7 +67,12 @@ class SwitchMachine(RuleBasedStateMachine):
         self.clock.advance(seconds)
         self.decision = self.switch.evaluate()
 
-    @rule(seconds=st.floats(min_value=0.0, max_value=5.0))
+    @rule(hours=st.floats(min_value=0.0, max_value=24.0))
+    def clock_jumps_forward(self, hours: float) -> None:
+        self.clock.advance(hours * 3600.0)
+        self.decision = self.switch.evaluate()
+
+    @rule(seconds=st.one_of(st.floats(min_value=0.0, max_value=5.0), st.floats(max_value=43200.0, min_value=0.0)))
     def clock_steps_back(self, seconds: float) -> None:
         self.clock.advance(-seconds)
         self.decision = self.switch.evaluate()
@@ -93,6 +99,14 @@ class SwitchMachine(RuleBasedStateMachine):
             return
         if loss_breached and session_id(self.clock()) == session:
             assert self.decision.has(Reason.DAILY_LOSS, Effect.TRIP)
+
+    @invariant()
+    def saved_session_never_moves_back_or_rebaselines_in_place(self) -> None:
+        now = load(self.path, ACCOUNT)
+        assert now.session_id >= self.saved.session_id
+        if now.session_id == self.saved.session_id:
+            assert now.session_start_equity == self.saved.session_start_equity
+        self.saved = now
 
     @invariant()
     def active_only_when_nothing_is_flagged(self) -> None:
