@@ -497,3 +497,9 @@ def test_real_negative_equity_trips_and_flattens(make: Factory) -> None:
     d = make(position=1).on_equity(-500.0)
     assert d.has(Reason.DAILY_LOSS, Effect.TRIP)
     assert d.flatten
+
+
+@pytest.mark.parametrize("bad", [float("nan"), 1.0, True, "1", None])
+def test_position_must_be_a_whole_number(make: Factory, bad: object) -> None:
+    with pytest.raises(ValueError):
+        make().on_position(bad)  # type: ignore[arg-type]
