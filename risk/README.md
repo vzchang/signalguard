@@ -94,6 +94,6 @@ HYPOTHESIS_PROFILE=ci .venv/bin/coverage run -m pytest risk -q && .venv/bin/cove
 .venv/bin/mutmut run && PATH="$PWD/.venv/bin:$PATH" .venv/bin/python .github/scripts/check_mutants.py
 ```
 
-210 tests, 100% branch coverage, and all 549 mutants killed. A test that pins each reason and
+216 tests, 100% branch coverage, and all 553 mutants killed. A test that pins each reason and
 each `NOT_ARMED` cause fails if a new one is added without a test, and a stateful property test
 checks the safety invariants after every step of random event sequences, restarts, and resets.

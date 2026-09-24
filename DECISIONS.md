@@ -517,8 +517,10 @@ that did rolled the session back, then forward again on post-loss equity, so a $
 zero against a $200 limit. Rollover now only moves forward and never runs on a clock known to be
 behind, and the property test now takes jumps of up to a day and steps back of up to twelve
 hours. The same review showed a real negative net liquidation value only blocked, when it is the
-worst loss there is; it now trips. The final code has 210 tests and all 549 mutants killed, and
-CI fails on any survivor.
+worst loss there is; it now trips. Adding a docstring guard then exposed a hole in the gate
+itself: the guard failed on mutmut's generated copy, mutmut aborted before testing anything,
+and the check script passed, because an aborted run has no survivors. It now requires every
+mutant to be killed. The final code has 216 tests and all 553 mutants killed.
 
 **Confidence.** High on the decision logic and persistence, which are covered by boundary pairs
 on every limit, a restart test on every trip, and a stateful property test. Moderate on the

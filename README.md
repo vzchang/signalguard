@@ -286,7 +286,7 @@ measured fills, so prime directive 5 is not satisfied until real fills exist.
 |---|---|
 | Validation harness, 5 checks, 1 composing gate, 40 tests, CI on 3 Python versions | ✅ **done, runnable** |
 | Validated against 155 years of S&P 500 data ([`real_data_gate.py`](harness/real_data_gate.py)) | ✅ **done** |
-| Kill switch (prime directive 4): 6 trips, 6 blocks, a latch that survives restarts, 210 tests, every mutant killed | ✅ **done, not yet wired to a broker** |
+| Kill switch (prime directive 4): 6 trips, 6 blocks, a latch that survives restarts, 216 tests, every mutant killed | ✅ **done, not yet wired to a broker** |
 | The trading system itself, data pipeline, execution, live | 📐 **specified to the file level, not built** |
 
 The ordering is deliberate: the harness that can reject a strategy comes before any
