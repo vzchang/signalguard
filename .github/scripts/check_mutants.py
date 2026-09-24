@@ -11,6 +11,7 @@ subprocess.run(["mutmut", "export-cicd-stats"], check=True, capture_output=True)
 with open(STATS) as f:
     stats = json.load(f)
 print(json.dumps(stats, indent=2))
-if stats["total"] == 0 or any(stats[k] for k in FAILING):
+# killed must equal total: a run that aborts early reports zero survivors too
+if stats["total"] == 0 or stats["killed"] != stats["total"] or any(stats[k] for k in FAILING):
     print(subprocess.run(["mutmut", "results"], capture_output=True, text=True).stdout)
     sys.exit("mutation gate failed: every mutant must be killed, or its line marked equivalent")

@@ -5,6 +5,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+import pytest
+
 HERE = Path(__file__).parent
 SOURCES = sorted(p for p in HERE.glob("*.py") if not p.name.startswith("test_") and p.name != "conftest.py")
 ALL = sorted(HERE.glob("*.py"))
@@ -48,6 +50,7 @@ def _public_defs() -> list[tuple[str, ast.AST]]:
     return found
 
 
+@pytest.mark.skipif("mutants" in HERE.parts, reason="mutmut's copy is generated code")
 def test_everything_public_has_a_one_line_docstring() -> None:
     missing = [
         name
