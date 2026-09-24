@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -462,3 +462,38 @@ def test_missing_state_directory_cannot_arm(tmp_path: Path, clock: FakeClock) ->
     assert d.mode is Mode.HALTED
     assert any("lock" in f.detail for f in d.flags)
     ks.close()
+
+
+def test_clock_stepping_back_across_the_session_open_keeps_the_daily_loss(
+    make: Factory, clock: FakeClock
+) -> None:
+    ks = make()
+    clock.now = datetime(2026, 9, 22, 22, 30, tzinfo=timezone.utc)  # 17:30 Tue: session Sep 23
+    ks.on_market_data(clock())
+    ks.on_equity(START)
+    clock.now = datetime(2026, 9, 23, 8, 10, tzinfo=timezone.utc)  # 03:10 Wed
+    ks.on_market_data(clock())
+    ks.on_equity(START - 150.0)
+    clock.advance(-11 * 3600.0)  # back across 17:00 Tue into the previous session
+    ks.on_equity(START - 150.0)
+    clock.now = datetime(2026, 9, 23, 8, 15, tzinfo=timezone.utc)
+    ks.on_market_data(clock())
+    assert ks.on_equity(START - 300.0).has(Reason.DAILY_LOSS, Effect.TRIP)
+
+
+def test_restart_with_the_clock_behind_the_saved_session_keeps_it(
+    make: Factory, clock: FakeClock, state_path: Path
+) -> None:
+    ks = make()
+    clock.now = datetime(2026, 9, 22, 22, 30, tzinfo=timezone.utc)
+    ks.on_equity(START)
+    ks.close()
+    clock.advance(-3600.0)  # a restart on a clock that is an hour slow
+    make(armed=False).on_equity(START - 50.0)
+    assert load(state_path, ACCOUNT).session_start_equity == START
+
+
+def test_real_negative_equity_trips_and_flattens(make: Factory) -> None:
+    d = make(position=1).on_equity(-500.0)
+    assert d.has(Reason.DAILY_LOSS, Effect.TRIP)
+    assert d.flatten
