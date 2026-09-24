@@ -1,12 +1,14 @@
-"""Shared fixtures: a controllable clock and a fresh state file."""
+"""Shared fixtures: a controllable clock and switches built on a fresh state file."""
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterator
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 
+from risk.kill_switch import KillSwitch
 from risk.model import Limits
 from risk.state import initialize
 
@@ -35,6 +37,9 @@ class FakeClock:
         self.now += timedelta(seconds=seconds)
 
 
+Factory = Callable[..., KillSwitch]
+
+
 @pytest.fixture
 def clock() -> FakeClock:
     return FakeClock()
@@ -45,3 +50,22 @@ def state_path(tmp_path: Path) -> Path:
     path = tmp_path / "switch.json"
     initialize(path, ACCOUNT, START, T0)
     return path
+
+
+@pytest.fixture
+def make(state_path: Path, clock: FakeClock) -> Iterator[Factory]:
+    """Build switches that are closed at teardown; `armed=True` feeds equity, position, and a tick."""
+    built: list[KillSwitch] = []
+
+    def factory(armed: bool = True, position: int = 0, limits: Limits = LIMITS) -> KillSwitch:
+        ks = KillSwitch(limits, state_path, ACCOUNT, clock)
+        built.append(ks)
+        if armed:
+            ks.on_equity(START)
+            ks.on_position(position)
+            ks.on_market_data(clock())
+        return ks
+
+    yield factory
+    for ks in built:
+        ks.close()
