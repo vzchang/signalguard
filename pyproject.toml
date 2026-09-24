@@ -1,0 +1,19 @@
+[tool.pytest.ini_options]
+testpaths = ["risk"]
+pythonpath = ["."]
+
+[tool.coverage.run]
+branch = true
+source = ["risk"]
+omit = ["risk/test_*.py", "risk/conftest.py"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+
+[tool.mutmut]
+source_paths = ["risk/"]
+pytest_add_cli_args_test_selection = ["risk/"]
+do_not_mutate = ["risk/test_*.py", "risk/conftest.py"]
+# message text is not behavior; these lines carry nothing else
+do_not_mutate_patterns = ['^\s*raise \w+\(', '^\s*log\.\w+\(']

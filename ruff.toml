@@ -13,6 +13,7 @@ select = [
     "C4",   # comprehension simplifications
     "SIM",  # simplifications
     "RUF",  # ruff-specific
+    "BLE",  # blind except
 ]
 
 # Two findings in harness/run_all.py are suppressed inline with the reason at the call site:
