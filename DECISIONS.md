@@ -510,7 +510,15 @@ could not tell working code from broken code in 92 places. Triage sorted them in
   carries a non-empty detail.
 
 Fixing the gaps also found a bug: a failed save was retried twice per event and logged twice.
-The final code has 207 tests and all 546 mutants killed, and CI now fails on any survivor.
+
+**What review found after that.** A fresh review of the finished branch found a fail-open path
+the gate could not see, because no test stepped the clock back across 17:00 Chicago. A clock
+that did rolled the session back, then forward again on post-loss equity, so a $300 day read as
+zero against a $200 limit. Rollover now only moves forward and never runs on a clock known to be
+behind, and the property test now takes jumps of up to a day and steps back of up to twelve
+hours. The same review showed a real negative net liquidation value only blocked, when it is the
+worst loss there is; it now trips. The final code has 210 tests and all 549 mutants killed, and
+CI fails on any survivor.
 
 **Confidence.** High on the decision logic and persistence, which are covered by boundary pairs
 on every limit, a restart test on every trip, and a stateful property test. Moderate on the

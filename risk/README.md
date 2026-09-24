@@ -53,14 +53,23 @@ arm. A lock on the state directory stops a second instance from arming against t
 ## What the adapter must do
 
 1. Treat a `ValueError` from `Limits.from_mapping` as fatal.
-2. Feed `on_equity` and `on_position` from the broker only.
-3. Call `on_order_action()` before every submit or modify and send only if `permits` allows it.
-4. Call `evaluate()` on a timer at least twice per shortest staleness limit.
-5. While `flatten` is true, keep exactly one working flattening order, deduplicated by client
+2. Feed `on_equity` and `on_position` from the broker only. Equity is an `int` or `float` (a
+   `Decimal` or numpy scalar reads as bad equity forever); position is a signed `int`.
+3. Feed `on_equity` more often than `max_equity_age_seconds`, even when the value has not
+   changed. If the broker pushes account values only on change or every few minutes, poll it or
+   re-feed the last value; otherwise a flat account blocks on stale equity. Measure the broker's
+   real cadence before choosing the limit.
+4. Call `on_order_action()` before every submit or modify and send only if `permits` allows it.
+5. Never report or gate a cancel. A `HALTED` switch must still be able to cancel working orders.
+6. Treat an order as reducing only if it is on the side opposite the position and its quantity
+   is at most `abs(position)` minus the quantity of reducing orders already working. An order
+   that would reverse the position, or stack on exits already working, is not reducing.
+7. Call `evaluate()` on a timer at least twice per shortest staleness limit.
+8. While `flatten` is true, keep exactly one working flattening order, deduplicated by client
    order ID.
-6. Block oversized orders before they are sent; this core detects a breach only after it.
-7. Alert on `CRITICAL` log records from `risk.kill_switch`.
-8. Call from one thread.
+9. Block oversized orders before they are sent; this core detects a breach only after it.
+10. Alert on `CRITICAL` log records from `risk.kill_switch`.
+11. Call from one thread.
 
 ## Limits it does not remove
 
@@ -68,8 +77,13 @@ arm. A lock on the state directory stops a second instance from arming against t
 |---|---|
 | The process dies, so nothing evaluates | A protective order resting at the exchange on every position |
 | A trip whose save failed is lost if the process then restarts | `CRITICAL` alert, and the resting protective orders |
+| A clock already wrong when the process starts is not flagged | Rollover only moves forward, so it cannot erase the day's loss, and a tick from the future counts as now, so staleness still works |
 | The order window resets on restart | The broker adapter's own submit rate limit |
 | First start mid-session misses earlier losses | The drawdown limit still applies |
+| A position over the cap is caught only after the fill | Pre-trade blocking in the adapter (rule 9) |
+| The position report has no freshness of its own | It shares the broker connection with equity, which does |
+| Deposits and withdrawals move equity | Both make it trip early, never late |
+| POSIX only (`fcntl` locking) | Windows is not a target |
 
 ## Running the checks
 
@@ -80,6 +94,6 @@ HYPOTHESIS_PROFILE=ci .venv/bin/coverage run -m pytest risk -q && .venv/bin/cove
 .venv/bin/mutmut run && PATH="$PWD/.venv/bin:$PATH" .venv/bin/python .github/scripts/check_mutants.py
 ```
 
-207 tests, 100% branch coverage, and all 546 mutants killed. A test that pins each reason and
+210 tests, 100% branch coverage, and all 549 mutants killed. A test that pins each reason and
 each `NOT_ARMED` cause fails if a new one is added without a test, and a stateful property test
 checks the safety invariants after every step of random event sequences, restarts, and resets.
