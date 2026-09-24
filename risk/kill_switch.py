@@ -96,6 +96,9 @@ class KillSwitch:
 
     def on_position(self, signed_contracts: int) -> Decision:
         """Record the broker-reported position."""
+        # abs(nan) > cap is False, so a NaN position would silently disable the position cap
+        if isinstance(signed_contracts, bool) or not isinstance(signed_contracts, int):
+            raise ValueError(f"position must be a whole number of contracts, got {signed_contracts!r}")
         now = self._begin()
         self._position = signed_contracts
         return self._evaluate(now)
