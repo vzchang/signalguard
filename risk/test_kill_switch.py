@@ -8,7 +8,7 @@ import pytest
 
 from risk.conftest import ACCOUNT, LIMITS, START, Factory, FakeClock
 from risk.kill_switch import KillSwitch
-from risk.model import Effect, Mode, Reason
+from risk.model import Cause, Effect, Mode, Reason
 from risk.state import load
 
 
@@ -460,7 +460,9 @@ def test_missing_state_directory_cannot_arm(tmp_path: Path, clock: FakeClock) ->
     ks = KillSwitch(LIMITS, tmp_path / "absent" / "switch.json", ACCOUNT, clock)
     d = ks.evaluate()
     assert d.mode is Mode.HALTED
-    assert any("lock" in f.detail for f in d.flags)
+    details = {f.detail for f in d.flags}
+    assert Cause.STATE_MISSING.value in details
+    assert Cause.LOCK_UNAVAILABLE.value not in details  # the folder is missing, not locked
     ks.close()
 
 

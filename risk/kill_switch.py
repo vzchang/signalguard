@@ -62,6 +62,9 @@ class KillSwitch:
         self._cause: Cause | None = None
         self._trips: set[Reason] = set()
         self._lock = Lock(self._path.parent)
+        if not self._path.parent.is_dir():
+            self._cause = Cause.STATE_MISSING  # say what is wrong, not that the lock failed
+            return
         if not self._lock.acquire():
             self._cause = Cause.LOCK_UNAVAILABLE
             return
