@@ -526,3 +526,51 @@ mutant to be killed. The final code has 216 tests and all 553 mutants killed.
 on every limit, a restart test on every trip, and a stateful property test. Moderate on the
 staleness limits, which cannot be set until the adapter measures how often the broker actually
 sends account updates.
+
+
+## NautilusTrader stays, on 2.0, after a probe of the alternatives
+
+**Decision.** NautilusTrader remains the framework, but the adapter and the trading core target
+2.0, pinned at 2.0.0rc5 until 2.0.0 is final, not 1.231.
+
+**Why it was reopened.** The original choice checked that NautilusTrader worked; it never
+compared it with anything. The adapter is the first code that binds to a framework, so this was
+the last cheap moment to ask.
+
+**Method.** The same as the first probe: install each candidate into its own Python 3.12
+environment and test the requirements the trading core depends on, marking each pass, fail, or
+unverifiable rather than reading around a gap.
+
+**What the probe found.**
+
+- backtrader is out. Its IBKR store imports IbPy, whose last release was in 2016, and it has no
+  Databento feed. Its own last release was 2023-04-19.
+- LEAN could not be judged here. Its CLI marks local backtests `requires_docker=True`, and this
+  machine has no Docker. Nothing else in the probe gave a reason to install it.
+- Building directly on ib_async and the databento client installs cleanly and has the pieces
+  (futures contracts, native stop orders, positions and open trades on connect), but no backtest
+  engine. One code path, order state, reconciliation, and reconnect deduplication would all be
+  ours to write, which is the ground prime directive 1 exists to protect.
+- NautilusTrader 2.0.0rc5 passed on everything the probe could reach: the same `add_strategy`
+  on `BacktestEngine` and `LiveNode`, IBKR and Databento adapters, `FuturesContract`, stop
+  orders not emulated by default (`emulation_trigger=None`), reconciliation on by default, and
+  Databento bars timestamped on close by default.
+
+**Why 2.0 rather than 1.231.** Three findings the first probe could not have made. 2.0
+rebuilds the package layout: every 1.x import path the plan used fails, and several classes are
+renamed (`InteractiveBrokersExecutionClientConfig`, `LiveExecutionEngineConfig`, `LiveNode`).
+1.231 publishes macOS wheels only for macOS 26, so it does not install on the development
+machine without Docker or a source build, while 2.0.0rc5 does. And no NautilusTrader code
+exists yet, so choosing 2.0 costs nothing now, where choosing 1.231 costs a rewrite later.
+
+**What changes.** CLAUDE.md fact 5 described the IBKR adapter's bar timestamp setting
+defaulting to False. In 2.0 that setting no longer exists, and how 2.0 stamps IBKR bars is
+unverified. It has to be checked against a live gateway before any strategy consumes them.
+
+**Not verifiable here, for any candidate.** Whether IBKR holds a CME stop natively or simulates
+it on its own servers is a property of the broker, the same whichever framework sends the order.
+It needs a paper account to check.
+
+**Confidence.** High that backtrader is out and that 2.0 beats 1.231 for new code. Moderate on
+NautilusTrader overall: the probe checked configuration and imports, not a running strategy,
+and 2.0 is a release candidate. Recheck the API when 2.0.0 is final.

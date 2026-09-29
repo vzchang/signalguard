@@ -120,9 +120,10 @@ Tripwires, not reasoning. Each line is enough to stop you writing the wrong thin
    the E-mini exchange fee alone, $1.38 on ES; never reuse it for micros. Adding one tick of
    spread gives $2.93 on M2K and $3.68 on MES. These are published schedules, not measured
    fills, so prime directive 5 is not yet satisfied.
-5. **The two adapters default in opposite directions.** Databento `bars_timestamp_on_close`
-   defaults True; the IB adapter's defaults False. This is a pre-installed lookahead bug. Set
-   both explicitly and assert at startup.
+5. **Bar timestamps are an adapter setting, and it moved in NautilusTrader 2.0.** Databento
+   `bars_timestamp_on_close` defaults True. The IB adapter's setting that defaulted False in
+   1.x no longer exists in 2.0, and how 2.0 stamps IB bars is unverified. Verify it against a
+   live gateway and assert it at startup before any strategy consumes IB bars.
 6. **There is no 5-minute Databento bar**, only `ohlcv-1s`, `-1m`, `-1h`, `-1d`.
 7. **Continuous contracts use `BACKWARD_SPREAD` for the traded series**, ratio only for return
    research. Pick one mechanism, Databento `.c.0` or Nautilus tables, never both. Book P&L on
