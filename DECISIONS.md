@@ -574,3 +574,43 @@ It needs a paper account to check.
 **Confidence.** High that backtrader is out and that 2.0 beats 1.231 for new code. Moderate on
 NautilusTrader overall: the probe checked configuration and imports, not a running strategy,
 and 2.0 is a release candidate. Recheck the API when 2.0.0 is final.
+
+
+## The broker probe: what IBKR actually sends, and a NautilusTrader bug in the way
+
+**What was measured.** A throwaway probe, kept out of this repo, connected read-only to an
+IBKR paper account through IB Gateway on 2026-10-06 and 2026-10-08, before any adapter code
+exists. Three questions: whether an unfunded paper account can use the API at all, how often
+account values arrive, and how bars are timestamped.
+
+- **The API works on an unfunded paper account.** IBKR's third-party FAQ says third-party
+  platforms need a funded Pro account. That did not stop our own client.
+- **Unchanged account values arrive every 180 seconds.** Over 31 minutes the first six gaps
+  between NetLiquidation updates were exactly 180.0 s. The same run caught an IBKR
+  connectivity loss (error 1100) and its restore (1102): one gap stretched to 184.6 s, and
+  after the restore updates arrived in duplicate pairs 0.0 to 0.1 s apart. So
+  `max_equity_age_seconds` has to sit above 180 with room for a late update, and the adapter
+  has to treat disconnects and duplicate updates as routine. The kill switch already ignores a
+  repeated value.
+- **IB labels an hourly bar by its start, and returns the bar still forming.** At about 19:30
+  UTC the newest bar returned was labelled 19:00 UTC. A bar still forming cannot carry its end
+  time, so the label is its start.
+
+**What could not be measured, and why.** NautilusTrader 2.0's IB client failed every bar
+request with error 2188. My first explanation was a protocol version mismatch, and it was
+wrong: IB Gateway latest negotiates version 225 with NautilusTrader, inside its supported
+range, and the request still failed. The real cause is a known bug (issues #5088 and #5142).
+IB sends 2188 as an advisory to accounts without a real-time data subscription and then
+delivers the delayed bars anyway; NautilusTrader treats the advisory as fatal and drops them.
+Clients on IB's older text protocol never receive 2188 at all, which is why the raw probe
+worked. The fix, PR #5041, merged into NautilusTrader's develop branch on 2026-10-08. 2.0.0rc6
+was tested and still fails.
+
+**Consequences.** The adapter waits for the first NautilusTrader release that contains #5041.
+That PR also moves the IB adapter onto ibapi 5.0.0, so the adapter is written against that
+release, not rc5 or rc6. Before any strategy consumes IB bars, two things still need checking
+on that release: which timestamp NautilusTrader puts on IB's start-labelled bar, and whether it
+drops the bar still forming. Consuming that bar would be lookahead.
+
+**Confidence.** High on the 180 s steady state (six identical gaps) and on IB labelling bars
+by their start. Low on behavior across outages, from a single one.
