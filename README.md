@@ -250,7 +250,7 @@ and a CI job cannot.
 ## The engineering record
 
 [`DECISIONS.md`](DECISIONS.md) is the log of what was decided and what was
-rejected, curated down to the eleven calls that still stand. **Five decisions in it were
+rejected, curated down to the twelve calls that still stand. **Five decisions in it were
 overturned by adversarial review**, including the original instrument choice, after the
 arithmetic showed MNQ sits outside a defensible risk band even intraday. The audits that
 overturned them are kept in full, because the reasoning that changed a decision outlasts
@@ -298,7 +298,7 @@ strategy. Phase plans and the domain constitution are kept private and ship as t
 |---|---|
 | [`harness/`](harness/) | The validation harness. 21 Python files, 40 tests, 5 charts. |
 | [`risk/`](risk/) | The kill switch. Standard library only, 100% branch coverage, zero surviving mutants. |
-| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: eleven decisions, five of them overturned by audit. |
+| [`DECISIONS.md`](DECISIONS.md) | The reasoning record: twelve decisions, five of them overturned by audit. |
 | [`.claude/`](.claude/) | The agent control layer: permissions, the routing hook, the task-gating command. |
 | [`CLAUDE.md`](CLAUDE.md) | Repository-level agent instructions, loaded every session. Not part of the product. |
 | [`docs/`](docs/) | A writeup of the harness, and [`PROMPTING.md`](docs/PROMPTING.md) on how the project is driven. |
@@ -332,7 +332,7 @@ The last two layers do not trust the ones above them, which is the point.
 
 | File | Guarantee |
 |---|---|
-| [`CLAUDE.md`](CLAUDE.md) | Instructions loaded every session: the operating protocol, six prime directives, thirteen domain facts that cannot be silently contradicted |
+| [`CLAUDE.md`](CLAUDE.md) | Instructions loaded every session: the operating protocol, six prime directives, fourteen domain facts that cannot be silently contradicted |
 | [`.claude/hooks/route.sh`](.claude/hooks/route.sh) | Prompt-to-workflow routing, fired before the model sees the prompt |
 | [`.claude/commands/qd.md`](.claude/commands/qd.md) | Task gating: compiles a rough ask into a falsifiable `Done when:`, then stops for approval |
 | [`.claude/settings.json`](.claude/settings.json) | Least-privilege tool permissions and an explicit deny list |

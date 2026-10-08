@@ -120,10 +120,12 @@ Tripwires, not reasoning. Each line is enough to stop you writing the wrong thin
    the E-mini exchange fee alone, $1.38 on ES; never reuse it for micros. Adding one tick of
    spread gives $2.93 on M2K and $3.68 on MES. These are published schedules, not measured
    fills, so prime directive 5 is not yet satisfied.
-5. **Bar timestamps are an adapter setting, and it moved in NautilusTrader 2.0.** Databento
-   `bars_timestamp_on_close` defaults True. The IB adapter's setting that defaulted False in
-   1.x no longer exists in 2.0, and how 2.0 stamps IB bars is unverified. Verify it against a
-   live gateway and assert it at startup before any strategy consumes IB bars.
+5. **IB labels a bar by its start and returns the bar still forming; NautilusTrader 2.0's
+   handling of that is unverified.** Verified on the raw IB API 2026-10-06. Databento
+   `bars_timestamp_on_close` defaults True. NautilusTrader 2.0.0rc5 and rc6 cannot fetch IB
+   bars on an account without real-time data (error 2188, issues #5088 and #5142, fixed by PR
+   #5041, unreleased as of 2026-10-08). On the first release with that fix, verify the
+   timestamp it assigns and that it drops the forming bar, and assert both at startup.
 6. **There is no 5-minute Databento bar**, only `ohlcv-1s`, `-1m`, `-1h`, `-1d`.
 7. **Continuous contracts use `BACKWARD_SPREAD` for the traded series**, ratio only for return
    research. Pick one mechanism, Databento `.c.0` or Nautilus tables, never both. Book P&L on
@@ -140,3 +142,7 @@ Tripwires, not reasoning. Each line is enough to stop you writing the wrong thin
 12. **Every open position needs a venue-resident protective order.** Locally emulated stops
     are prohibited in live trading; they die with the process.
 13. **Never size off day-trade margin.** Monitor against full SPAN initial margin.
+14. **IB re-sends unchanged account values every 180 seconds**, measured 2026-10-08 over 31
+    minutes on a paper account. `max_equity_age_seconds` must exceed 180 with headroom for a
+    late update. Across a disconnect (error 1100) and restore (1102), updates arrive late and
+    in duplicate pairs.

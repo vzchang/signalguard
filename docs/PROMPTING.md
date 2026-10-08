@@ -12,7 +12,7 @@ lazy one. These four layers are ordered by how little they depend on you remembe
 
 | Layer | Where | Cost | Guarantees |
 |---|---|---|---|
-| **1. Always-loaded rules** | `CLAUDE.md` (~170 lines, ~2.5k tok) | every session | The protocol, the 6 directives, and 13 facts that can't be silently contradicted |
+| **1. Always-loaded rules** | `CLAUDE.md` (~170 lines, ~2.5k tok) | every session | The protocol, the 6 directives, and 14 facts that can't be silently contradicted |
 | **2. Prompt compilation** | `CLAUDE.md` §0, "Compile the request before acting" | ~40 tok/task | Every ask becomes Task / Phase / **Done when** / Riskiest before any work starts |
 | **3. Deterministic routing** | `.claude/hooks/route.sh` | 0 to 60 tok/turn | Nine routes fire on your prompt text, whether or not the model was going to reach for them |
 | **4. On-demand facts** | the domain constitution, grepped, kept private | 0 unless needed | The arithmetic behind every rule, without paying for it every session |
